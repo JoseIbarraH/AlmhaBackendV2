@@ -22,6 +22,19 @@ Actualmente la plataforma cuenta con los siguientes de módulos base:
 - **Auth (`src/Admin/Auth`):** Manejo de la autenticación *stateless*. Orquesta el inicio de sesión para generar tokens **JWT** (`php-open-source-saver/jwt-auth`).
 - **Role (`src/Admin/Role`):** Gestión y asignación de roles y permisos. Utiliza bajo el capó a `spatie/laravel-permission`, adaptado al guardia de la API.
 - **User (`src/Admin/User`):** CRUD completo para la administración del personal o usuarios. Soporta peticiones `GET`, `POST`, `PUT`, y `DELETE` con validaciones de Value Objects.
+- **Blog (`src/Admin/Blog`):** Sistema de gestión de contenido multi-idioma. 
+    - Incluye categorías jerárquicas y artículos (blogs).
+    - Soporta **traducción automática** mediante Google Translate API integrada en la capa de aplicación.
+    - Manejo de imágenes optimizado con almacenamiento en **MinIO/S3** a través del trait compartido `StoresImages`.
+    - Recuperación por ID con filtrado dinámico por idioma vía encabezado de petición `Accept-Language`.
+
+---
+
+## 🛠 Componentes Compartidos (Shared)
+
+Para garantizar la consistencia y reducir la duplicación, el sistema utiliza componentes transversales en `src/Shared`:
+
+- **Infrastructure/Traits/StoresImages:** Lógica reutilizable para el guardado de imágenes en S3/MinIO, construcción de URLs dinámicas y limpieza de directorios de almacenamiento.
 
 ---
 

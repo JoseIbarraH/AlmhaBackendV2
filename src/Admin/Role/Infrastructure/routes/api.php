@@ -6,12 +6,12 @@ use Src\Admin\Role\Infrastructure\Controllers\AssignRoleController;
 use Src\Admin\Role\Infrastructure\Controllers\GetRolesController;
 use Src\Admin\Role\Infrastructure\Controllers\GetPermissionsController;
 
-Route::prefix('roles')->group(function () {
+Route::prefix('roles')->middleware(['auth:api'])->group(function () {
     Route::get('/', GetRolesController::class);
     Route::post('/', CreateRoleController::class);
     Route::post('/assign', AssignRoleController::class);
 });
 
-Route::prefix('permissions')->group(function () {
+Route::prefix('permissions')->middleware(['auth:api'])->group(function () {
     Route::get('/', GetPermissionsController::class);
 });

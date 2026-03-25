@@ -10,12 +10,12 @@ use Src\Admin\Blog\Infrastructure\Controllers\ChangeBlogStatusController;
 use Src\Admin\Blog\Infrastructure\Controllers\UpdateBlogController;
 use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogController;
 
-Route::prefix('blog-categories')->group(function () {
+Route::prefix('blog-categories')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateBlogCategoryController::class);
     Route::get('/', GetAllBlogCategoriesController::class);
 });
 
-Route::prefix('blogs')->group(function () {
+Route::prefix('blogs')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateBlogController::class);
     Route::get('/', GetAllBlogsController::class);
     Route::get('/{id}', GetBlogController::class);
