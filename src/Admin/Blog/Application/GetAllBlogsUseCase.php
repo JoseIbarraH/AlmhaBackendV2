@@ -15,8 +15,8 @@ final class GetAllBlogsUseCase
         $this->repository = $repository;
     }
 
-    public function execute(): array
+    public function execute(string $lang): array
     {
-        return $this->repository->getAll();
+        return $this->repository->getAllByLang($lang);
     }
 }

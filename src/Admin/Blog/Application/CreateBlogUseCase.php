@@ -22,7 +22,6 @@ final class CreateBlogUseCase
     }
 
     public function execute(
-        string $slug,
         string $categoryCode,
         string $baseLang,
         string $title,
@@ -32,7 +31,7 @@ final class CreateBlogUseCase
         ?int $userId = null,
         ?string $image = null,
         ?string $writer = null
-    ): void
+    ): int
     {
         $translations = [];
         
@@ -49,7 +48,6 @@ final class CreateBlogUseCase
 
         // Ya con todas las traducciones listas (Hijas), creamos el root (Agregado)
         $blog = new Blog(
-            $slug,
             $categoryCode,
             $status,
             $userId,
@@ -62,6 +60,6 @@ final class CreateBlogUseCase
         );
 
         // El repositorio se encarga de guardar todo atómicamente en BD
-        $this->repository->save($blog);
+        return $this->repository->save($blog);
     }
 }

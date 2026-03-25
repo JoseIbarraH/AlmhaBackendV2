@@ -29,7 +29,6 @@ return new class extends Migration
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('slug')->unique();
             $table->string('image')->nullable();
             $table->string('category_code')->index(); // references blog_categories.code virtually
             $table->string('writer')->nullable();
@@ -47,6 +46,7 @@ return new class extends Migration
             $table->foreignId('blog_id')->constrained('blogs')->onDelete('cascade');
             $table->string('lang', 5);
             $table->string('title');
+            $table->string('slug')->unique();
             $table->longText('content')->nullable();
             $table->unique(['blog_id', 'lang']);
             $table->timestamps();

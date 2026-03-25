@@ -11,7 +11,6 @@ final class Blog implements \JsonSerializable
 {
     private ?int $id;
     private ?int $userId;
-    private string $slug;
     private ?string $image;
     private string $categoryCode;
     private ?string $writer;
@@ -24,7 +23,6 @@ final class Blog implements \JsonSerializable
     private array $translations;
 
     public function __construct(
-        string $slug,
         string $categoryCode,
         string $status = 'draft',
         ?int $userId = null,
@@ -40,7 +38,6 @@ final class Blog implements \JsonSerializable
             throw new RuntimeException("Invalid blog status: $status");
         }
 
-        $this->slug = $slug;
         $this->categoryCode = $categoryCode;
         $this->status = $status;
         $this->userId = $userId;
@@ -56,7 +53,6 @@ final class Blog implements \JsonSerializable
     // Getters for Aggregate Root
     public function id(): ?int { return $this->id; }
     public function userId(): ?int { return $this->userId; }
-    public function slug(): string { return $this->slug; }
     public function image(): ?string { return $this->image; }
     public function categoryCode(): string { return $this->categoryCode; }
     public function writer(): ?string { return $this->writer; }
@@ -89,7 +85,6 @@ final class Blog implements \JsonSerializable
         return [
             'id' => $this->id,
             'userId' => $this->userId,
-            'slug' => $this->slug,
             'image' => $this->image,
             'categoryCode' => $this->categoryCode,
             'writer' => $this->writer,

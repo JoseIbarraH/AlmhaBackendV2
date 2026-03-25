@@ -6,31 +6,31 @@ namespace Src\Admin\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Src\Admin\Blog\Application\GetAllBlogsUseCase;
+use Src\Admin\Blog\Application\GetBlogUseCase;
 use Exception;
 
-final class GetAllBlogsController
+final class GetBlogController
 {
-    private GetAllBlogsUseCase $useCase;
+    private GetBlogUseCase $useCase;
 
-    public function __construct(GetAllBlogsUseCase $useCase)
+    public function __construct(GetBlogUseCase $useCase)
     {
         $this->useCase = $useCase;
     }
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, string $slug): JsonResponse
     {
         try {
             $lang = $request->header('Accept-Language', 'es');
-            $blogs = $this->useCase->execute($lang);
+            $blog = $this->useCase->execute($slug, $lang);
             
             return response()->json([
-                'data' => $blogs
+                'data' => $blog
             ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()
-            ], 500);
+            ], 404);
         }
     }
 }

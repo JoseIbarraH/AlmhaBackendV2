@@ -23,7 +23,6 @@ final class UpdateBlogUseCase
 
     public function execute(
         int $id,
-        string $slug,
         string $categoryCode,
         string $baseLang,
         string $title,
@@ -51,7 +50,6 @@ final class UpdateBlogUseCase
         }
 
         $blogToUpdate = new Blog(
-            $slug,
             $categoryCode,
             $blog->status(),
             $userId ?? $blog->userId(),

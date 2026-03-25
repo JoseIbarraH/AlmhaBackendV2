@@ -13,7 +13,6 @@ class BlogEloquentModel extends Model
 
     protected $fillable = [
         'user_id',
-        'slug',
         'image',
         'category_code',
         'writer',
