@@ -80,6 +80,16 @@ final class Blog implements \JsonSerializable
         $this->translations[] = $translation;
     }
 
+    public function getTranslation(string $lang): ?BlogTranslation
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->lang() === $lang) {
+                return $translation;
+            }
+        }
+        return null;
+    }
+
     public function jsonSerialize(): mixed
     {
         return [

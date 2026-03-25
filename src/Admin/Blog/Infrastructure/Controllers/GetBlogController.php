@@ -18,11 +18,11 @@ final class GetBlogController
         $this->useCase = $useCase;
     }
 
-    public function __invoke(Request $request, string $slug): JsonResponse
+    public function __invoke(Request $request, int $id): JsonResponse
     {
         try {
             $lang = $request->header('Accept-Language', 'es');
-            $blog = $this->useCase->execute($slug, $lang);
+            $blog = $this->useCase->execute($id, $lang);
             
             return response()->json([
                 'data' => $blog

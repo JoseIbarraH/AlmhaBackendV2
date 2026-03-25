@@ -6,13 +6,15 @@ namespace Src\Admin\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 use Src\Admin\Blog\Application\UpdateBlogUseCase;
 use Src\Admin\Blog\Domain\Contracts\BlogRepositoryContract;
+use Src\Shared\Infrastructure\Traits\StoresImages;
 use Exception;
 
 final class UpdateBlogController
 {
+    use StoresImages;
+
     private UpdateBlogUseCase $useCase;
     private BlogRepositoryContract $repository;
 
@@ -53,15 +55,11 @@ final class UpdateBlogController
 
             // Subir nueva imagen a MinIO si se envió
             if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                
-                // Eliminar imágenes anteriores de la carpeta
-                Storage::disk('s3')->deleteDirectory("blogs/{$id}/main_image");
-                
-                $path = "blogs/{$id}/main_image/{$file->getClientOriginalName()}";
-                Storage::disk('s3')->put($path, file_get_contents($file->getRealPath()));
-                
-                $imageUrl = Storage::disk('s3')->url($path);
+                $imageUrl = $this->storeImage(
+                    $request->file('image'),
+                    "blogs/{$id}/main_image",
+                    true // eliminar imágenes anteriores
+                );
                 $this->repository->updateImage($id, $imageUrl);
             }
 

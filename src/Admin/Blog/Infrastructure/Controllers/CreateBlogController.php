@@ -6,13 +6,15 @@ namespace Src\Admin\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
 use Src\Admin\Blog\Application\CreateBlogUseCase;
 use Src\Admin\Blog\Domain\Contracts\BlogRepositoryContract;
+use Src\Shared\Infrastructure\Traits\StoresImages;
 use Exception;
 
 final class CreateBlogController
 {
+    use StoresImages;
+
     private CreateBlogUseCase $useCase;
     private BlogRepositoryContract $repository;
 
@@ -53,12 +55,10 @@ final class CreateBlogController
 
             // Subir imagen a MinIO si se envió
             if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $path = "blogs/{$blogId}/main_image/{$file->getClientOriginalName()}";
-                
-                Storage::disk('s3')->put($path, file_get_contents($file->getRealPath()));
-                
-                $imageUrl = Storage::disk('s3')->url($path);
+                $imageUrl = $this->storeImage(
+                    $request->file('image'),
+                    "blogs/{$blogId}/main_image"
+                );
                 $this->repository->updateImage($blogId, $imageUrl);
             }
 

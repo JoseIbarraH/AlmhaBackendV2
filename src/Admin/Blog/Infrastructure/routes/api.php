@@ -18,7 +18,7 @@ Route::prefix('blog-categories')->group(function () {
 Route::prefix('blogs')->group(function () {
     Route::post('/', CreateBlogController::class);
     Route::get('/', GetAllBlogsController::class);
-    Route::get('/{slug}', GetBlogController::class);
+    Route::get('/{id}', GetBlogController::class);
     Route::put('/{id}', UpdateBlogController::class);
     Route::delete('/{id}', DeleteBlogController::class);
     Route::patch('/{id}/status', ChangeBlogStatusController::class);
