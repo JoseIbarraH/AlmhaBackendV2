@@ -604,5 +604,38 @@ sequenceDiagram
 
 ---
 
+### 9. Traducciones Multi-idioma
+
+Si el módulo requiere soporte para múltiples idiomas con traducción automática (como `Blog`), sigue este patrón:
+
+#### 1. Estructura de Entidades
+Divide la información en dos entidades de dominio:
+- **Entidad Principal**: Contiene campos globales (IDs, códigos, estados, imágenes).
+- **Entidad de Traducción**: Contiene campos que varían por idioma (título, contenido, slugs).
+
+**Ejemplo:** `Blog.php` y `BlogTranslation.php`.
+
+#### 2. Uso del Traductor en el Caso de Uso
+El caso de uso recibe un `TranslatorServiceContract` para generar las traducciones antes de persistir.
+
+```php
+// Application/CreateBlogUseCase.php
+foreach ($targetLanguages as $lang) {
+    $translatedTitle = $this->translator->translate($title, $lang, $baseLang);
+    $translations[] = new BlogTranslation($lang, $translatedTitle, $translatedContent);
+}
+
+$blog = new Blog(..., $translations);
+return $this->repository->save($blog);
+```
+
+#### 3. Persistencia Atómica
+El repositorio debe guardar la entidad principal y todas sus traducciones en una sola transacción de base de datos para asegurar la integridad.
+
+#### 4. Slugs por Idioma
+Si usas slugs, impleméntalos en el **Modelo Eloquent de Traducción** utilizando el trait `HasSlug` de Spatie, para que cada idioma tenga su propio slug único generado a partir de su título traducido.
+
+---
+
 > [!TIP]
 > **Resumen rápido:** Domain define las reglas, Application orquesta las operaciones, e Infrastructure conecta con el mundo exterior. Mantén cada capa **desacoplada** y tu código será fácil de mantener, testear y escalar.
