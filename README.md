@@ -82,4 +82,3 @@ Authorization: Bearer <aquí-va-el-token>
 Accept: application/json
 ```
 
-***Desarrollado con ❤️ aplicando las mejores prácticas de la ingeniería de software.***
