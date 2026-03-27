@@ -21,10 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Admin/Auth/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Role/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Blog/Infrastructure/routes/api.php');
-                    // ⬇️ EJEMPLOS de cómo agregarías futuros módulos aquí abajo ⬇️
-                    // require base_path('src/admin/Product/Infrastructure/routes/api.php');
-                    // require base_path('src/admin/Order/Infrastructure/routes/api.php');
-                    // require base_path('src/admin/Payment/Infrastructure/routes/api.php');
+                    require base_path('src/Admin/Procedure/Infrastructure/routes/api.php');
+
 
                 });
         },

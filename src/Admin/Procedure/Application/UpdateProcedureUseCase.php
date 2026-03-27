@@ -19,8 +19,9 @@ use Src\Admin\Procedure\Domain\Entity\ProcedureRecoveryPhase;
 use Src\Admin\Procedure\Domain\Entity\ProcedureRecoveryPhaseTranslation;
 use Src\Admin\Procedure\Domain\Entity\ProcedureResultGallery;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
+use RuntimeException;
 
-final class CreateProcedureUseCase
+final class UpdateProcedureUseCase
 {
     private ProcedureRepositoryContract $repository;
     private TranslatorServiceContract $translator;
@@ -32,6 +33,7 @@ final class CreateProcedureUseCase
     }
 
     public function execute(
+        int $id,
         string $categoryCode,
         string $baseLang,
         string $title,
@@ -46,8 +48,14 @@ final class CreateProcedureUseCase
         array $preparationStepsData = [],
         array $recoveryPhasesData = [],
         array $galleryData = []
-    ): int
+    ): void
     {
+        $procedure = $this->repository->findById($id);
+
+        if (!$procedure) {
+            throw new RuntimeException("Procedure not found with ID: $id");
+        }
+
         $translations = [];
         $translations[] = new ProcedureTranslation(null, $baseLang, null, $title, $subtitle);
 
@@ -65,13 +73,13 @@ final class CreateProcedureUseCase
         $phases = $this->createPhases($recoveryPhasesData, $baseLang, $targetLanguages);
         $gallery = array_map(fn($g) => new ProcedureResultGallery(null, $g['path'], $g['type'], $g['pairId'] ?? null, $g['order'] ?? 0), $galleryData);
 
-        $procedure = new Procedure(
-            null,
+        $updatedProcedure = new Procedure(
+            $id,
             $userId,
             $image,
             $categoryCode,
             $status,
-            0,
+            $procedure->views(),
             $translations,
             $sections,
             $faqs,
@@ -81,7 +89,7 @@ final class CreateProcedureUseCase
             $gallery
         );
 
-        return $this->repository->save($procedure);
+        $this->repository->update($updatedProcedure);
     }
 
     private function createSections(array $data, string $baseLang, array $targetLanguages): array

@@ -15,4 +15,8 @@ interface BlogCategoryRepositoryContract
     public function findByCode(string $code): ?BlogCategory;
 
     public function getAll(): array;
+
+    public function update(BlogCategory $category): void;
+
+    public function delete(int $id): void;
 }

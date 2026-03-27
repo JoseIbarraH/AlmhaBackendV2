@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Src\Admin\Blog\Infrastructure\Controllers\CreateBlogCategoryController;
 use Src\Admin\Blog\Infrastructure\Controllers\GetAllBlogCategoriesController;
+use Src\Admin\Blog\Infrastructure\Controllers\UpdateBlogCategoryController;
+use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogCategoryController;
+
 use Src\Admin\Blog\Infrastructure\Controllers\CreateBlogController;
 use Src\Admin\Blog\Infrastructure\Controllers\GetAllBlogsController;
 use Src\Admin\Blog\Infrastructure\Controllers\GetBlogController;
@@ -13,6 +16,8 @@ use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogController;
 Route::prefix('blog-categories')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateBlogCategoryController::class);
     Route::get('/', GetAllBlogCategoriesController::class);
+    Route::put('/{id}', UpdateBlogCategoryController::class);
+    Route::delete('/{id}', DeleteBlogCategoryController::class);
 });
 
 Route::prefix('blogs')->middleware(['auth:api'])->group(function () {

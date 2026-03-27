@@ -69,6 +69,38 @@ final class EloquentProcedureCategoryRepository implements ProcedureCategoryRepo
         })->toArray();
     }
 
+    public function update(ProcedureCategory $category): void
+    {
+        DB::transaction(function () use ($category) {
+            $eloquentCategory = $this->model->find($category->id());
+            if ($eloquentCategory) {
+                $eloquentCategory->update([
+                    'code' => $category->code()
+                ]);
+
+                // Sync translations
+                $eloquentCategory->translations()->delete();
+                foreach ($category->translations() as $translation) {
+                    $eloquentCategory->translations()->create([
+                        'lang' => $translation->lang(),
+                        'title' => $translation->title()
+                    ]);
+                }
+            }
+        });
+    }
+
+    public function delete(int $id): void
+    {
+        DB::transaction(function () use ($id) {
+            $eloquentCategory = $this->model->find($id);
+            if ($eloquentCategory) {
+                $eloquentCategory->translations()->delete();
+                $eloquentCategory->delete();
+            }
+        });
+    }
+
     private function mapToDomain($eloquentCat): ProcedureCategory
     {
         $translations = $eloquentCat->translations->map(function ($t) {

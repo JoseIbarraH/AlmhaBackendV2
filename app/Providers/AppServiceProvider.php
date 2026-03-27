@@ -45,6 +45,16 @@ class AppServiceProvider extends ServiceProvider
             \Src\Admin\User\Domain\Contracts\UserRepositoryContract::class,
             \Src\Admin\User\Infrastructure\Repositories\EloquentUserRepository::class
         );
+
+        $this->app->bind(
+            \Src\Admin\Procedure\Domain\Contracts\ProcedureRepositoryContract::class,
+            \Src\Admin\Procedure\Infrastructure\Repositories\EloquentProcedureRepository::class
+        );
+
+        $this->app->bind(
+            \Src\Admin\Procedure\Domain\Contracts\ProcedureCategoryRepositoryContract::class,
+            \Src\Admin\Procedure\Infrastructure\Repositories\EloquentProcedureCategoryRepository::class
+        );
     }
 
     /**

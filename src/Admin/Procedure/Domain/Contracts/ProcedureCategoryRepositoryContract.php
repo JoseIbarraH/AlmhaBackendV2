@@ -15,4 +15,8 @@ interface ProcedureCategoryRepositoryContract
     public function findByCode(string $code): ?ProcedureCategory;
 
     public function getAll(): array;
+
+    public function update(ProcedureCategory $category): void;
+
+    public function delete(int $id): void;
 }
