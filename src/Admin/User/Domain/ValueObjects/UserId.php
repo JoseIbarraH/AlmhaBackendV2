@@ -6,15 +6,15 @@ final class UserId
     private $value;
 
     /**
-     * @param int $id
-     * @throws InvalidArgumentException
+     * @param string $id
+     * @throws \InvalidArgumentException
      */
-    public function __construct(int $id)
+    public function __construct(string $id)
     {
         $this->value = $id;
     }
 
-    public function value(): int
+    public function value(): string
     {
         return $this->value;
     }

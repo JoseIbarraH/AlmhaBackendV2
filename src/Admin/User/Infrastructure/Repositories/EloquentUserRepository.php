@@ -69,7 +69,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 new UserPassword($user->password),
                 new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
                 new UserStatus((bool)$user->is_active),
-                new UserId((int)$user->id)
+                new UserId((string)$user->id)
             );
         })->toArray();
     }
@@ -88,7 +88,7 @@ final class EloquentUserRepository implements UserRepositoryContract
             new UserPassword($user->password),
             new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
             new UserStatus((bool)$user->is_active),
-            new UserId((int)$user->id)
+            new UserId((string)$user->id)
         );
     }
 

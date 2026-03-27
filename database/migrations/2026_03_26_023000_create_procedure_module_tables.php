@@ -28,10 +28,10 @@ return new class extends Migration
         // 3. Procedures
         Schema::create('procedures', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->uuid('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('image')->nullable();
-            $table->foreignId('category_id')->constrained('procedure_categories')->onDelete('cascade');
-            $table->string('status')->default('draft'); // draft, published
+            $table->foreignId('category_code')->index();
+            $table->string('status')->default('draft'); // draft, published, archived
             $table->integer('views')->default(0);
             $table->timestamps();
             $table->softDeletes();

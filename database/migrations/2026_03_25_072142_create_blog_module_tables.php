@@ -28,12 +28,12 @@ return new class extends Migration
         // 3. Blogs
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->uuid('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('image')->nullable();
             $table->string('category_code')->index(); // references blog_categories.code virtually
             $table->string('writer')->nullable();
             $table->integer('views')->default(0);
-            $table->string('status')->default('draft'); // draft, published
+            $table->string('status')->default('draft'); // draft, published, archived
             $table->timestamp('published_at')->nullable();
             $table->timestamp('notification_sent_at')->nullable();
             $table->timestamps();

@@ -2,34 +2,34 @@
 
 declare(strict_types=1);
 
-namespace Src\Admin\Blog\Domain\Entity;
+namespace Src\Admin\Procedure\Domain\Entity;
 
-final class BlogCategoryTranslation implements \JsonSerializable
+final class ProcedurePostoperativeInstructionTranslation implements \JsonSerializable
 {
     private ?int $id;
     private string $lang;
-    private string $title;
+    private string $content;
 
     public function __construct(
         ?int $id = null,
         string $lang,
-        string $title
+        string $content
     ){
         $this->id = $id;
         $this->lang = $lang;
-        $this->title = $title;
+        $this->content = $content;
     }
 
     public function id(): ?int { return $this->id; }
     public function lang(): string { return $this->lang; }
-    public function title(): string { return $this->title; }
+    public function content(): string { return $this->content; }
 
     public function jsonSerialize(): mixed
     {
         return [
             'id' => $this->id,
             'lang' => $this->lang,
-            'title' => $this->title,
+            'content' => $this->content,
         ];
     }
 }

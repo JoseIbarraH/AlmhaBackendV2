@@ -32,7 +32,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $roleEditor->syncPermissions(['crear usuarios', 'editar usuarios', 'eliminar usuarios', 'buscar usuario', 'listar usuarios']);
 
         // 4. (Opcional) Asignarle el rol admin al usuario #1 si existe
-        $user = \App\Models\User::find(1);
+        $user = \App\Models\User::first();
         if ($user) {
             echo("ROl asignado");
             // Nota: El modelo User debe estar asociado al guard api o Spatie lo detectará automáticamente.

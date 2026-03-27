@@ -12,7 +12,13 @@ final class BlogTranslation implements \JsonSerializable
     private ?string $slug;
     private ?string $content;
 
-    public function __construct(string $lang, string $title, ?string $content = null, ?string $slug = null, ?int $id = null)
+    public function __construct(
+        string $lang,
+        string $title,
+        ?string $content = null,
+        ?string $slug = null,
+        ?int $id = null
+    )
     {
         $this->lang = $lang;
         $this->title = $title;
