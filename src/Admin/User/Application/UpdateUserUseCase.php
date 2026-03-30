@@ -22,9 +22,9 @@ final class UpdateUserUseCase
         $this->repository = $repository;
     }
 
-    public function execute(string $id, string $name, string $email, ?string $password, ?bool $isActive = null): void
+    public function execute(string $id, string $name, string $email, ?string $password, ?bool $isActive = null, array $roles = []): void
     {
-        $user = $this->repository->findById(new UserId((int)$id));
+        $user = $this->repository->findById(new UserId($id));
 
         if (!$user) {
             throw new UserNotFoundException($id);
@@ -45,6 +45,7 @@ final class UpdateUserUseCase
             $passwordVo,
             $user->rememberToken(),
             $statusVo,
+            $roles,
             $user->id()
         );
 

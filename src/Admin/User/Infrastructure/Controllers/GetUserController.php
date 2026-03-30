@@ -49,8 +49,11 @@ class GetUserController extends Controller
 
             return response()->json([
                 'data' => [
+                    'id' => $user->id() ? $user->id()->value() : null,
                     'name' => $user->name()->value(),
                     'email' => $user->email()->value(),
+                    'is_active' => $user->status()->value(),
+                    'roles' => $user->roles(),
                 ]
             ], 200);
             

@@ -29,7 +29,7 @@ final class CreateUserUseCase
         string $userPassword,
         ?string $userRememberToken,
         ?bool $isActive = true,
-        ?string $roleName = null
+        array $roles = []
     ): void
     {
         $name = new UserName($userName);
@@ -39,7 +39,7 @@ final class CreateUserUseCase
         $rememberToken = new UserRememberToken($userRememberToken);
         $status = new \Src\Admin\User\Domain\ValueObjects\UserStatus($isActive);
 
-        $user = User::create($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $roleName);
+        $user = User::create($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $roles);
 
         $this->repository->save($user);
 

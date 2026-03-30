@@ -78,6 +78,7 @@ final class GetUserByCriteriaController
                     'name' => $user->name()->value(),
                     'email' => $user->email()->value(),
                     'is_active' => $user->status()->value(),
+                    'roles' => $user->roles(),
                 ];
             }, $users);
 

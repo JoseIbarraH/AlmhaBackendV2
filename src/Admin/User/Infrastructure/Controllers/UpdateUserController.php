@@ -41,7 +41,14 @@ class UpdateUserController extends Controller
                     new OA\Property(property: "name", type: "string", example: "Jose Ibarra"),
                     new OA\Property(property: "email", type: "string", example: "jose@example.com"),
                     new OA\Property(property: "password", type: "string", example: "password123"),
-                    new OA\Property(property: "is_active", type: "boolean", example: true)
+                    new OA\Property(property: "is_active", type: "boolean", example: true),
+                    new OA\Property(
+                        property: "roles",
+                        type: "array",
+                        items: new OA\Items(type: "string"),
+                        example: ["blog_manager", "team_manager"],
+                        description: "Arreglo de nombres de roles a asignar"
+                    )
                 ]
             )
         ),
@@ -62,6 +69,8 @@ class UpdateUserController extends Controller
             'email' => 'required|email|max:255',
             'password' => 'nullable|string|min:6',
             'is_active' => 'nullable|boolean',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string|exists:roles,name'
         ]);
 
         try {
@@ -70,7 +79,8 @@ class UpdateUserController extends Controller
                 $request->input('name'),
                 $request->input('email'),
                 $request->input('password'),
-                $request->input('is_active')
+                $request->input('is_active'),
+                $request->input('roles', [])
             );
             
             return response()->json([

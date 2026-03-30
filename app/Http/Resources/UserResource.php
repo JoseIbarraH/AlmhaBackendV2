@@ -23,9 +23,11 @@ class UserResource extends JsonResource
         }
 
         return [
+            'id' => $user->id()->value(),
             'name' => $user->name()->value(),
             'email' => $user->email()->value(),
             'email_verified_date' => $user->emailVerifiedDate()->value(),
+            'roles' => $user->roles(),
         ];
     }
 }

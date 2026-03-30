@@ -19,7 +19,7 @@ final class DeleteUserUseCase
 
     public function execute(string $id): void
     {
-        $userId = new UserId((int)$id);
+        $userId = new UserId($id);
         $user = $this->repository->findById($userId);
 
         if (!$user) {

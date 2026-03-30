@@ -19,7 +19,7 @@ final class User
     private $password;
     private $rememberToken;
     private $status;
-    private $roleName;
+    private $roles;
 
 
     public function __construct(
@@ -29,7 +29,7 @@ final class User
         UserPassword $password,
         UserRememberToken $rememberToken,
         UserStatus $status,
-        ?string $roleName = null,
+        array $roles = [],
         ?UserId $id = null
     )
     {
@@ -39,7 +39,7 @@ final class User
         $this->password = $password;
         $this->rememberToken = $rememberToken;
         $this->status = $status;
-        $this->roleName = $roleName;
+        $this->roles = $roles;
         $this->id = $id;
     }
 
@@ -78,9 +78,9 @@ final class User
         return $this->status;
     }
 
-    public function roleName(): ?string
+    public function roles(): array
     {
-        return $this->roleName;
+        return $this->roles;
     }
 
     public static function create(
@@ -90,11 +90,11 @@ final class User
         UserPassword $password,
         UserRememberToken $rememberToken,
         UserStatus $status,
-        ?string $roleName = null,
+        array $roles = [],
         ?UserId $id = null
     ): User
     {
-        $user = new self($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $roleName, $id);
+        $user = new self($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $roles, $id);
 
         return $user;
     }

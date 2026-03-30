@@ -37,8 +37,8 @@ final class EloquentUserRepository implements UserRepositoryContract
 
         $newUserModel = $this->eloquentUserModel->create($data);
 
-        if ($user->roleName()) {
-            $newUserModel->assignRole($user->roleName());
+        if (!empty($user->roles())) {
+            $newUserModel->assignRole($user->roles());
         }
     }
 
@@ -71,7 +71,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 new UserPassword($user->password),
                 new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
                 new UserStatus((bool)$user->is_active),
-                null,
+                $user->getRoleNames()->toArray(),
                 new UserId((string)$user->id)
             );
         })->toArray();
@@ -91,7 +91,7 @@ final class EloquentUserRepository implements UserRepositoryContract
             new UserPassword($user->password),
             new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
             new UserStatus((bool)$user->is_active),
-            null,
+            $user->getRoleNames()->toArray(),
             new UserId((string)$user->id)
         );
     }
@@ -111,6 +111,8 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'password' => $user->password()->value(),
                 'is_active' => $user->status()->value(),
             ]);
+
+            $eloquentUser->syncRoles($user->roles());
         }
     }
 
@@ -134,6 +136,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'email' => $user->email,
                 'is_active' => (bool)$user->is_active,
                 'email_verified_at' => $user->email_verified_at,
+                'roles' => $user->getRoleNames()->toArray(),
             ];
         })->toArray();
     }

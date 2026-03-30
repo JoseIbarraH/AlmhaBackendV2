@@ -25,7 +25,7 @@ final class GetUserUseCase
      */
     public function execute(string $id): User
     {
-        $user = $this->repository->findById(new UserId((int)$id));
+        $user = $this->repository->findById(new UserId($id));
 
         if (!$user) {
             throw new UserNotFoundException($id);
