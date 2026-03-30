@@ -12,4 +12,5 @@ interface TeamRepositoryContract {
     public function getAll(): array;
     public function update(Team $team): void;
     public function delete(int $id): void;
+    public function updateImage(int $id, string $imageUrl): void;
 }

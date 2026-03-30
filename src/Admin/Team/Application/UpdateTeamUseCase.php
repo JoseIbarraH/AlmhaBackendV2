@@ -7,6 +7,8 @@ namespace Src\Admin\Team\Application;
 use Src\Admin\Team\Domain\Contracts\TeamRepositoryContract;
 use Src\Admin\Team\Domain\Entity\Team;
 use Src\Admin\Team\Domain\Entity\TeamTranslation;
+use Src\Admin\Team\Domain\Entity\TeamImage;
+use Src\Admin\Team\Domain\Entity\TeamImageTranslation;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
 
 final class UpdateTeamUseCase {
@@ -42,6 +44,17 @@ final class UpdateTeamUseCase {
             $translations[] = new TeamTranslation($lang, $tSpecialization, $tDescription, $tBiography);
         }
 
+        $teamImages = [];
+        foreach ($images as $imageData) {
+            $imageTranslations = [];
+            $imageTranslations[] = new TeamImageTranslation($baseLang, null); // Por ahora sin descripción
+            $teamImages[] = new TeamImage(
+                $imageData['path'],
+                $imageData['order'] ?? 0,
+                $imageTranslations
+            );
+        }
+
         $team = new Team(
             $slug,
             $name,
@@ -49,7 +62,7 @@ final class UpdateTeamUseCase {
             $userId,
             $image,
             $translations,
-            $images,
+            $teamImages,
             $id
         );
 

@@ -12,4 +12,9 @@ interface AuthenticatorContract
      * @throws \Src\Admin\Auth\Domain\Exceptions\InvalidCredentialsException
      */
     public function login(array $credentials): AuthToken;
+
+    /**
+     * @return AuthToken
+     */
+    public function refresh(): AuthToken;
 }

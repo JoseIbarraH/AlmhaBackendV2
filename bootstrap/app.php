@@ -22,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Admin/Role/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Blog/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Procedure/Infrastructure/routes/api.php');
-
+                    require base_path('src/Admin/Team/Infrastructure/Routes/api.php');
 
                 });
         },

@@ -3,8 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+use Src\Admin\User\Infrastructure\Controllers\GetAuthenticatedUserController;
+
+Route::middleware('auth:api')->get('/user', GetAuthenticatedUserController::class);
 
 

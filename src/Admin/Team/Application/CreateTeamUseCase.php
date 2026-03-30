@@ -7,6 +7,8 @@ namespace Src\Admin\Team\Application;
 use Src\Admin\Team\Domain\Contracts\TeamRepositoryContract;
 use Src\Admin\Team\Domain\Entity\Team;
 use Src\Admin\Team\Domain\Entity\TeamTranslation;
+use Src\Admin\Team\Domain\Entity\TeamImage;
+use Src\Admin\Team\Domain\Entity\TeamImageTranslation;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
 
 final class CreateTeamUseCase {
@@ -41,6 +43,17 @@ final class CreateTeamUseCase {
             $translations[] = new TeamTranslation($lang, $tSpecialization, $tDescription, $tBiography);
         }
 
+        $teamImages = [];
+        foreach ($images as $imageData) {
+            $imageTranslations = [];
+            $imageTranslations[] = new TeamImageTranslation($baseLang, null); // Por ahora sin descripción
+            $teamImages[] = new TeamImage(
+                $imageData['path'],
+                $imageData['order'] ?? 0,
+                $imageTranslations
+            );
+        }
+
         $team = new Team(
             $slug,
             $name,
@@ -48,7 +61,7 @@ final class CreateTeamUseCase {
             $userId,
             $image,
             $translations,
-            $images
+            $teamImages
         );
 
         return $this->repository->save($team);

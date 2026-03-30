@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Src\Admin\Auth\Application\LoginUseCase;
 use Src\Admin\Auth\Domain\Exceptions\InvalidCredentialsException;
 
+use OpenApi\Attributes as OA;
+
 class LoginController extends Controller
 {
     private LoginUseCase $loginUseCase;
@@ -17,6 +19,35 @@ class LoginController extends Controller
         $this->loginUseCase = $loginUseCase;
     }
 
+    #[OA\Post(
+        path: "/auth/login",
+        summary: "Iniciar sesión",
+        tags: ["Auth"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "password"],
+                properties: [
+                    new OA\Property(property: "email", type: "string", format: "email", example: "user@example.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", example: "password123")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Login exitoso",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "access_token", type: "string"),
+                        new OA\Property(property: "token_type", type: "string", example: "bearer"),
+                        new OA\Property(property: "expires_in", type: "integer", example: 3600)
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: "Credenciales inválidas")
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([

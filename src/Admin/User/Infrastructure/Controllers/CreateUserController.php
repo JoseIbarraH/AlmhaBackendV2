@@ -11,6 +11,8 @@ use Src\Admin\User\Application\CreateUserUseCase;
 use Src\Admin\User\Application\GetUserByCriteriaUseCase;
 use Src\Admin\User\Infrastructure\Repositories\EloquentUserRepository;
 
+use OpenApi\Attributes as OA;
+
 final class CreateUserController
 {
     private $repository;
@@ -20,6 +22,30 @@ final class CreateUserController
         $this->repository = $repository;
     }
 
+    #[OA\Post(
+        path: "/users",
+        summary: "Crear un nuevo usuario",
+        tags: ["User"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["name", "email", "password"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Juan Perez"),
+                    new OA\Property(property: "email", type: "string", format: "email", example: "juan@example.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", example: "password123")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Usuario creado exitosamente"
+            ),
+            new OA\Response(response: 422, description: "Error de validación")
+        ]
+    )]
     public function __invoke(Request $request)
     {
         $userName = $request->input('name');

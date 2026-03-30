@@ -24,4 +24,11 @@ class JwtLaravelAuthenticator implements AuthenticatorContract
 
         return new AuthToken($token);
     }
+
+    public function refresh(): AuthToken
+    {
+        $token = Auth::guard('api')->refresh();
+
+        return new AuthToken($token);
+    }
 }
