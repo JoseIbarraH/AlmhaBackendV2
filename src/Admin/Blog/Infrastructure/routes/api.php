@@ -16,7 +16,7 @@ use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogController;
 Route::prefix('blog-categories')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateBlogCategoryController::class);
     Route::get('/', GetAllBlogCategoriesController::class);
-    Route::put('/{id}', UpdateBlogCategoryController::class);
+    Route::post('/{id}', UpdateBlogCategoryController::class);
     Route::delete('/{id}', DeleteBlogCategoryController::class);
 });
 
@@ -24,7 +24,7 @@ Route::prefix('blogs')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateBlogController::class);
     Route::get('/', GetAllBlogsController::class);
     Route::get('/{id}', GetBlogController::class);
-    Route::put('/{id}', UpdateBlogController::class);
+    Route::post('/{id}', UpdateBlogController::class);
     Route::delete('/{id}', DeleteBlogController::class);
     Route::patch('/{id}/status', ChangeBlogStatusController::class);
 });

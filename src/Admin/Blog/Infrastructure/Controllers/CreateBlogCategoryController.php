@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Src\Admin\Blog\Application\CreateBlogCategoryUseCase;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class CreateBlogCategoryController
 {
     private CreateBlogCategoryUseCase $useCase;
@@ -18,6 +20,31 @@ final class CreateBlogCategoryController
         $this->useCase = $useCase;
     }
 
+    #[OA\Post(
+        path: "/blog-categories",
+        summary: "Crear una nueva categoría de blog",
+        tags: ["Blog"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["code", "baseLang", "title"],
+                properties: [
+                    new OA\Property(property: "code", type: "string", example: "NOTICIAS"),
+                    new OA\Property(property: "baseLang", type: "string", example: "es"),
+                    new OA\Property(property: "title", type: "string", example: "Noticias y Novedades")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Categoría creada exitosamente"
+            ),
+            new OA\Response(response: 422, description: "Error de validación"),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([

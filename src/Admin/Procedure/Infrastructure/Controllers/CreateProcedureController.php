@@ -11,6 +11,8 @@ use Src\Admin\Procedure\Domain\Contracts\ProcedureRepositoryContract;
 use Src\Shared\Infrastructure\Traits\StoresImages;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class CreateProcedureController
 {
     use StoresImages;
@@ -24,6 +26,77 @@ final class CreateProcedureController
         $this->repository = $repository;
     }
 
+    #[OA\Post(
+        path: "/procedures",
+        summary: "Crear un nuevo procedimiento",
+        tags: ["Procedure"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    required: ["categoryCode", "baseLang", "title", "userId"],
+                    properties: [
+                        new OA\Property(property: "categoryCode", type: "string", example: "CIRUGIA_ESTETICA"),
+                        new OA\Property(property: "baseLang", type: "string", example: "es"),
+                        new OA\Property(property: "title", type: "string", example: "Rinoplastia"),
+                        new OA\Property(property: "subtitle", type: "string"),
+                        new OA\Property(property: "userId", type: "string"),
+                        new OA\Property(property: "image", type: "string", format: "binary", description: "Imagen principal"),
+                        new OA\Property(
+                            property: "sections",
+                            type: "array",
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: "type", type: "string"),
+                                    new OA\Property(property: "title", type: "string"),
+                                    new OA\Property(property: "contentOne", type: "string"),
+                                    new OA\Property(property: "order", type: "integer")
+                                ]
+                            )
+                        ),
+                        new OA\Property(
+                            property: "faqs",
+                            type: "array",
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: "question", type: "string"),
+                                    new OA\Property(property: "answer", type: "string"),
+                                    new OA\Property(property: "order", type: "integer")
+                                ]
+                            )
+                        ),
+                        new OA\Property(
+                            property: "gallery",
+                            type: "array",
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: "path", type: "string", format: "binary"),
+                                    new OA\Property(property: "type", type: "string"),
+                                    new OA\Property(property: "order", type: "integer")
+                                ]
+                            )
+                        )
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Procedimiento creado exitosamente",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string"),
+                        new OA\Property(property: "procedureId", type: "integer")
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: "Error de validación"),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([

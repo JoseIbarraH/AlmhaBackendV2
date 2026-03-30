@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Src\Admin\Blog\Application\GetAllBlogsUseCase;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class GetAllBlogsController
 {
     private GetAllBlogsUseCase $useCase;
@@ -18,6 +20,29 @@ final class GetAllBlogsController
         $this->useCase = $useCase;
     }
 
+    #[OA\Get(
+        path: "/blogs",
+        summary: "Listar todas las entradas de blog",
+        tags: ["Blog"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "Accept-Language",
+                in: "header",
+                required: false,
+                description: "Idioma de los contenidos (es, en)",
+                schema: new OA\Schema(type: "string", default: "es")
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Lista de blogs",
+                content: new OA\JsonContent(type: "array", items: new OA\Items(type: "object"))
+            ),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         try {

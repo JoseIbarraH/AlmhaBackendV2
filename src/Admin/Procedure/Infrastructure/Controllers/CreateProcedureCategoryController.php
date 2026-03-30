@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Src\Admin\Procedure\Application\CreateProcedureCategoryUseCase;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class CreateProcedureCategoryController
 {
     private CreateProcedureCategoryUseCase $useCase;
@@ -18,6 +20,31 @@ final class CreateProcedureCategoryController
         $this->useCase = $useCase;
     }
 
+    #[OA\Post(
+        path: "/procedure-categories",
+        summary: "Crear una nueva categoría de procedimientos",
+        tags: ["Procedure"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["code", "baseLang", "title"],
+                properties: [
+                    new OA\Property(property: "code", type: "string", example: "CIRUGIA_ESTETICA"),
+                    new OA\Property(property: "baseLang", type: "string", example: "es"),
+                    new OA\Property(property: "title", type: "string", example: "Cirugía Estética")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Categoría creada exitosamente"
+            ),
+            new OA\Response(response: 422, description: "Error de validación"),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([

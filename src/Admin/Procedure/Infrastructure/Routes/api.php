@@ -15,7 +15,7 @@ use Src\Admin\Procedure\Infrastructure\Controllers\DeleteProcedureCategoryContro
 Route::prefix('procedure-categories')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateProcedureCategoryController::class);
     Route::get('/', GetAllProcedureCategoriesController::class);
-    Route::put('/{id}', UpdateProcedureCategoryController::class);
+    Route::post('/{id}', UpdateProcedureCategoryController::class);
     Route::delete('/{id}', DeleteProcedureCategoryController::class);
 });
 

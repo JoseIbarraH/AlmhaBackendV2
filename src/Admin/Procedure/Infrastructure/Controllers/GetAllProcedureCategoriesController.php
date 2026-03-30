@@ -8,6 +8,8 @@ use Illuminate\Http\JsonResponse;
 use Src\Admin\Procedure\Application\GetAllProcedureCategoriesUseCase;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class GetAllProcedureCategoriesController
 {
     private GetAllProcedureCategoriesUseCase $useCase;
@@ -17,6 +19,20 @@ final class GetAllProcedureCategoriesController
         $this->useCase = $useCase;
     }
 
+    #[OA\Get(
+        path: "/procedure-categories",
+        summary: "Listar todas las categorías de procedimientos",
+        tags: ["Procedure"],
+        security: [["bearerAuth" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Lista de categorías",
+                content: new OA\JsonContent(type: "array", items: new OA\Items(type: "object"))
+            ),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(): JsonResponse
     {
         try {

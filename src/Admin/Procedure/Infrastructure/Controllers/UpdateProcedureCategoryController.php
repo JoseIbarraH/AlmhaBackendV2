@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Src\Admin\Procedure\Application\UpdateProcedureCategoryUseCase;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class UpdateProcedureCategoryController
 {
     private UpdateProcedureCategoryUseCase $useCase;
@@ -18,6 +20,40 @@ final class UpdateProcedureCategoryController
         $this->useCase = $useCase;
     }
 
+    #[OA\Post(
+        path: "/procedure-categories/{id}",
+        summary: "Actualizar una categoría de procedimientos",
+        tags: ["Procedure"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID de la categoría",
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["code", "baseLang", "title"],
+                properties: [
+                    new OA\Property(property: "code", type: "string", example: "CIRUGIA_ESTETICA"),
+                    new OA\Property(property: "baseLang", type: "string", example: "es"),
+                    new OA\Property(property: "title", type: "string", example: "Cirugía Estética Actualizada")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Categoría actualizada exitosamente"
+            ),
+            new OA\Response(response: 404, description: "No encontrado"),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $request->validate([

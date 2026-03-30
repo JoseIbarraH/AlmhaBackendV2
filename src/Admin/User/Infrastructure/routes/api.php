@@ -15,6 +15,6 @@ Route::prefix('users')
     Route::post('/', CreateUserController::class)->middleware('permission:crear usuarios');
     Route::get('/search', GetUserByCriteriaController::class)->middleware('permission:buscar usuario');
     Route::get('/{id}', GetUserController::class)->middleware('permission:buscar usuario');
-    Route::put('/{id}', UpdateUserController::class)->middleware('permission:editar usuarios');
+    Route::post('/{id}', UpdateUserController::class)->middleware('permission:editar usuarios');
     Route::delete('/{id}', DeleteUserController::class)->middleware('permission:eliminar usuarios');
 });

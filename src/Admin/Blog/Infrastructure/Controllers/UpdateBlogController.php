@@ -11,6 +11,8 @@ use Src\Admin\Blog\Domain\Contracts\BlogRepositoryContract;
 use Src\Shared\Infrastructure\Traits\StoresImages;
 use Exception;
 
+use OpenApi\Attributes as OA;
+
 final class UpdateBlogController
 {
     use StoresImages;
@@ -24,6 +26,48 @@ final class UpdateBlogController
         $this->repository = $repository;
     }
 
+    #[OA\Post(
+        path: "/blogs/{id}",
+        summary: "Actualizar una entrada de blog",
+        tags: ["Blog"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                in: "path",
+                required: true,
+                description: "ID del blog",
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: "multipart/form-data",
+                schema: new OA\Schema(
+                    required: ["categoryCode", "baseLang", "title"],
+                    properties: [
+                        new OA\Property(property: "categoryCode", type: "string", example: "NOTICIAS"),
+                        new OA\Property(property: "baseLang", type: "string", example: "es"),
+                        new OA\Property(property: "title", type: "string"),
+                        new OA\Property(property: "content", type: "string"),
+                        new OA\Property(property: "userId", type: "integer"),
+                        new OA\Property(property: "writer", type: "string"),
+                        new OA\Property(property: "image", type: "string", format: "binary", description: "Nueva imagen principal")
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Blog actualizado exitosamente"
+            ),
+            new OA\Response(response: 404, description: "No encontrado"),
+            new OA\Response(response: 422, description: "Error de validación"),
+            new OA\Response(response: 401, description: "No autorizado")
+        ]
+    )]
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $request->validate([
