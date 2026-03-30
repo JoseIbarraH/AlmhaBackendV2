@@ -60,6 +60,11 @@ class AppServiceProvider extends ServiceProvider
             \Src\Admin\Team\Domain\Contracts\TeamRepositoryContract::class,
             \Src\Admin\Team\Infrastructure\Repositories\EloquentTeamRepository::class
         );
+
+        $this->app->bind(
+            \Src\Admin\Audit\Domain\Contracts\AuditRepositoryContract::class,
+            \Src\Admin\Audit\Infrastructure\EloquentAuditRepository::class
+        );
     }
 
     /**

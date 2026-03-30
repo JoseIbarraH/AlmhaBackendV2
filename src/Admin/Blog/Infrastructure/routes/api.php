@@ -14,17 +14,17 @@ use Src\Admin\Blog\Infrastructure\Controllers\UpdateBlogController;
 use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogController;
 
 Route::prefix('blog-categories')->middleware(['auth:api'])->group(function () {
-    Route::post('/', CreateBlogCategoryController::class);
-    Route::get('/', GetAllBlogCategoriesController::class);
-    Route::post('/{id}', UpdateBlogCategoryController::class);
-    Route::delete('/{id}', DeleteBlogCategoryController::class);
+    Route::post('/', CreateBlogCategoryController::class)->middleware('permission:create_blog_categories');
+    Route::get('/', GetAllBlogCategoriesController::class)->middleware('permission:view_blog_categories');
+    Route::post('/{id}', UpdateBlogCategoryController::class)->middleware('permission:edit_blog_categories');
+    Route::delete('/{id}', DeleteBlogCategoryController::class)->middleware('permission:delete_blog_categories');
 });
 
 Route::prefix('blogs')->middleware(['auth:api'])->group(function () {
-    Route::post('/', CreateBlogController::class);
-    Route::get('/', GetAllBlogsController::class);
-    Route::get('/{id}', GetBlogController::class);
-    Route::post('/{id}', UpdateBlogController::class);
-    Route::delete('/{id}', DeleteBlogController::class);
-    Route::patch('/{id}/status', ChangeBlogStatusController::class);
+    Route::post('/', CreateBlogController::class)->middleware('permission:create_blogs');
+    Route::get('/', GetAllBlogsController::class)->middleware('permission:view_blogs');
+    Route::get('/{id}', GetBlogController::class)->middleware('permission:view_blog_detail');
+    Route::post('/{id}', UpdateBlogController::class)->middleware('permission:edit_blogs');
+    Route::delete('/{id}', DeleteBlogController::class)->middleware('permission:delete_blogs');
+    Route::patch('/{id}/status', ChangeBlogStatusController::class)->middleware('permission:change_blog_status');
 });

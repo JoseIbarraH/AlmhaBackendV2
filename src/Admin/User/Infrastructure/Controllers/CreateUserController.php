@@ -34,7 +34,8 @@ final class CreateUserController
                 properties: [
                     new OA\Property(property: "name", type: "string", example: "Juan Perez"),
                     new OA\Property(property: "email", type: "string", format: "email", example: "juan@example.com"),
-                    new OA\Property(property: "password", type: "string", format: "password", example: "password123")
+                    new OA\Property(property: "password", type: "string", format: "password", example: "password123"),
+                    new OA\Property(property: "role", type: "string", example: "blog_manager", description: "Nombre del rol a asignar")
                 ]
             )
         ),
@@ -54,6 +55,7 @@ final class CreateUserController
         $userPassword = Hash::make($request->input('password'));
         $userRememberToken = null;
         $isActive = $request->input('is_active', true);
+        $roleName = $request->input('role');
 
         $createUserUseCase = new CreateUserUseCase($this->repository);
         $createUserUseCase->__invoke(
@@ -62,7 +64,8 @@ final class CreateUserController
             $userEmailVerifiedDate,
             $userPassword,
             $userRememberToken,
-            $isActive
+            $isActive,
+            $roleName
         );
 
         $getUserByCriteriaUseCase = new GetUserByCriteriaUseCase($this->repository);

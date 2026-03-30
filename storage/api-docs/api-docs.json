@@ -26,6 +26,38 @@
                 ]
             }
         },
+        "/audits": {
+            "get": {
+                "tags": [
+                    "Audit"
+                ],
+                "summary": "Obtener todos los registros de auditoría",
+                "operationId": "8856b7fb6b88f0e897aebb93401c6d4e",
+                "responses": {
+                    "200": {
+                        "description": "Lista de auditorías",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/auth/login": {
             "post": {
                 "tags": [
@@ -1984,6 +2016,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Audit",
+            "description": "Audit"
+        },
         {
             "name": "Auth",
             "description": "Auth"

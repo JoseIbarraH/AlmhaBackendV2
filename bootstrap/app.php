@@ -23,11 +23,16 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Admin/Blog/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Procedure/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Team/Infrastructure/Routes/api.php');
+                    require base_path('src/Admin/Audit/Infrastructure/Routes/api.php');
 
                 });
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->api(append: [
+            \Src\Shared\Infrastructure\Middleware\AuditLogMiddleware::class,
+        ]);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

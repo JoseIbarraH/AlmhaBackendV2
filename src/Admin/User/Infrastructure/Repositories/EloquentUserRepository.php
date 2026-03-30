@@ -26,8 +26,6 @@ final class EloquentUserRepository implements UserRepositoryContract
 
     public function save(User $user): void
     {
-        $newUser = $this->eloquentUserModel;
-
         $data = [
             'name' => $user->name()->value(),
             'email' => $user->email()->value(),
@@ -37,7 +35,11 @@ final class EloquentUserRepository implements UserRepositoryContract
             'is_active' => $user->status()->value(),
         ];
 
-        $newUser->create($data);
+        $newUserModel = $this->eloquentUserModel->create($data);
+
+        if ($user->roleName()) {
+            $newUserModel->assignRole($user->roleName());
+        }
     }
 
     public function findByCriteria(?string $term, ?UserName $name, ?UserEmail $email): array
@@ -69,6 +71,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 new UserPassword($user->password),
                 new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
                 new UserStatus((bool)$user->is_active),
+                null,
                 new UserId((string)$user->id)
             );
         })->toArray();
@@ -88,6 +91,7 @@ final class EloquentUserRepository implements UserRepositoryContract
             new UserPassword($user->password),
             new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
             new UserStatus((bool)$user->is_active),
+            null,
             new UserId((string)$user->id)
         );
     }

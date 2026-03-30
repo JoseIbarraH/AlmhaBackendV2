@@ -15,29 +15,82 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     public function run()
     {
-        // 1. Limpiar la caché de Spatie (MUY IMPORTANTE)
+        // 1. Limpiar la caché de Spatie
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // 2. Crear Permisos indicando explícitamente el guard 'api'
-        Permission::firstOrCreate(['name' => 'crear usuarios', 'guard_name' => 'api']);
-        Permission::firstOrCreate(['name' => 'editar usuarios', 'guard_name' => 'api']);
-        Permission::firstOrCreate(['name' => 'eliminar usuarios', 'guard_name' => 'api']);
-        Permission::firstOrCreate(['name' => 'buscar usuario', 'guard_name' => 'api']);
-        Permission::firstOrCreate(['name' => 'listar usuarios', 'guard_name' => 'api']);
+        // 2. Definir Permisos por Módulos
+        $permissionsByModule = [
+            'users' => ['view_users', 'create_users', 'edit_users', 'delete_users', 'search_users', 'view_user_detail'],
+            'blogs' => [
+                'view_blogs', 'create_blogs', 'edit_blogs', 'delete_blogs', 'change_blog_status', 'view_blog_detail',
+                'view_blog_categories', 'create_blog_categories', 'edit_blog_categories', 'delete_blog_categories'
+            ],
+            'procedures' => [
+                'view_procedures', 'create_procedures', 'edit_procedures', 'delete_procedures', 'view_procedure_detail',
+                'view_procedure_categories', 'create_procedure_categories', 'edit_procedure_categories', 'delete_procedure_categories'
+            ],
+            'teams' => ['view_teams', 'create_teams', 'edit_teams', 'delete_teams', 'view_team_detail'],
+            'audits' => ['view_audits'],
+            'roles' => ['view_roles', 'assign_roles', 'view_permissions'],
+        ];
 
-        // 3. Crear Roles indicando el guard 'api' y asignar permisos
-        $roleAdmin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'api']);
-        $roleAdmin->syncPermissions(['crear usuarios', 'editar usuarios', 'eliminar usuarios', 'buscar usuario', 'listar usuarios']);
-        $roleEditor = Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'api']);
-        $roleEditor->syncPermissions(['crear usuarios', 'editar usuarios', 'eliminar usuarios', 'buscar usuario', 'listar usuarios']);
+        $allPermissionNames = [];
+        foreach ($permissionsByModule as $module => $permissions) {
+            foreach ($permissions as $permissionName) {
+                Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'api']);
+                $allPermissionNames[] = $permissionName;
+            }
+        }
 
-        // 4. (Opcional) Asignarle el rol admin al usuario #1 si existe
+        // 3. Definir Roles y sus Traducciones
+        $rolesData = [
+            'super_admin' => [
+                'titles' => ['es' => 'Super Administrador', 'en' => 'Super Administrator'],
+                'permissions' => $allPermissionNames
+            ],
+            'user_manager' => [
+                'titles' => ['es' => 'Gestor de Usuarios', 'en' => 'User Manager'],
+                'permissions' => array_merge($permissionsByModule['users'], $permissionsByModule['roles'])
+            ],
+            'blog_manager' => [
+                'titles' => ['es' => 'Gestor de Blog', 'en' => 'Blog Manager'],
+                'permissions' => $permissionsByModule['blogs']
+            ],
+            'procedure_manager' => [
+                'titles' => ['es' => 'Gestor de Procedimientos', 'en' => 'Procedure Manager'],
+                'permissions' => $permissionsByModule['procedures']
+            ],
+            'team_manager' => [
+                'titles' => ['es' => 'Gestor de Equipo', 'en' => 'Team Manager'],
+                'permissions' => $permissionsByModule['teams']
+            ],
+            'audit_viewer' => [
+                'titles' => ['es' => 'Visor de Auditoría', 'en' => 'Audit Viewer'],
+                'permissions' => $permissionsByModule['audits']
+            ],
+        ];
+
+        foreach ($rolesData as $roleName => $data) {
+            $role = \Src\Admin\Role\Infrastructure\Models\CustomRole::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'api'
+            ]);
+
+            // Guardar traducciones
+            foreach ($data['titles'] as $lang => $title) {
+                \Src\Admin\Role\Infrastructure\Models\RoleTranslationModel::updateOrCreate(
+                    ['role_id' => $role->id, 'lang' => $lang],
+                    ['title' => $title]
+                );
+            }
+
+            $role->syncPermissions($data['permissions']);
+        }
+
+        // 4. Asignar super_admin al primer usuario
         $user = \App\Models\User::first();
         if ($user) {
-            echo("ROl asignado");
-            // Nota: El modelo User debe estar asociado al guard api o Spatie lo detectará automáticamente.
-            $user->assignRole('admin');
-            $user->assignRole('editor');
+            $user->assignRole('super_admin');
         }
     }
 }

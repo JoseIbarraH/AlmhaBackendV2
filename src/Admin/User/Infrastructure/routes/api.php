@@ -11,10 +11,10 @@ use Src\Admin\User\Infrastructure\Controllers\DeleteUserController;
 Route::prefix('users')
     ->middleware(['auth:api'])
     ->group(function () {
-    Route::get('/', GetAllUsersController::class)->middleware('permission:listar usuarios');
-    Route::post('/', CreateUserController::class)->middleware('permission:crear usuarios');
-    Route::get('/search', GetUserByCriteriaController::class)->middleware('permission:buscar usuario');
-    Route::get('/{id}', GetUserController::class)->middleware('permission:buscar usuario');
-    Route::post('/{id}', UpdateUserController::class)->middleware('permission:editar usuarios');
-    Route::delete('/{id}', DeleteUserController::class)->middleware('permission:eliminar usuarios');
+    Route::get('/', GetAllUsersController::class)->middleware('permission:view_users');
+    Route::post('/', CreateUserController::class)->middleware('permission:create_users');
+    Route::get('/search', GetUserByCriteriaController::class)->middleware('permission:search_users');
+    Route::get('/{id}', GetUserController::class)->middleware('permission:view_user_detail');
+    Route::post('/{id}', UpdateUserController::class)->middleware('permission:edit_users');
+    Route::delete('/{id}', DeleteUserController::class)->middleware('permission:delete_users');
 });
