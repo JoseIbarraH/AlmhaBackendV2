@@ -3,14 +3,14 @@
 namespace Src\Admin\Procedure\Infrastructure\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Sluggable\SlugOptions;
+use Spatie\Sluggable\SlugOptions; 
 use Spatie\Sluggable\HasSlug;
 use Illuminate\Support\Str;
 
 class ProcedureTranslationEloquentModel extends Model
 {
     use HasSlug;
-    
+
     protected $table = 'procedure_translations';
 
     protected $fillable = [
