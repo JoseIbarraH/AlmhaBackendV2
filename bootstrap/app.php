@@ -24,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Admin/Procedure/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Team/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Audit/Infrastructure/Routes/api.php');
+                    require base_path('src/Admin/Trash/Infrastructure/routes/api.php');
 
                 });
         },
