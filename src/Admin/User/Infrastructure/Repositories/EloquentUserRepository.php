@@ -63,7 +63,7 @@ final class EloquentUserRepository implements UserRepositoryContract
 
         $users = $query->get();
 
-        return $users->map(function ($user) {
+        return $users->map(function (EloquentUserModel $user) {
             return new User(
                 new UserName($user->name),
                 new UserEmail($user->email),
@@ -129,7 +129,7 @@ final class EloquentUserRepository implements UserRepositoryContract
     {
         $users = $this->eloquentUserModel->all();
         
-        return $users->map(function ($user) {
+        return $users->map(function (EloquentUserModel $user) {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -139,5 +139,10 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'roles' => $user->getRoleNames()->toArray(),
             ];
         })->toArray();
+    }
+
+    public function hasAdmin(): bool
+    {
+        return $this->eloquentUserModel->role('super_admin')->exists();
     }
 }

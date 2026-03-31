@@ -86,11 +86,5 @@ class RolesAndPermissionsSeeder extends Seeder
 
             $role->syncPermissions($data['permissions']);
         }
-
-        // 4. Asignar super_admin al primer usuario
-        $user = \App\Models\User::first();
-        if ($user) {
-            $user->assignRole('super_admin');
-        }
     }
 }
