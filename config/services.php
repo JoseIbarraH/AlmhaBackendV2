@@ -40,4 +40,9 @@ return [
         'targets' => explode(',', env('GOOGLE_TRANSLATE_TARGETS', 'es,en,fr')),
     ],
 
+    'n8n' => [
+        'webhook_url' => env('N8N_WEBHOOK_URL'),
+        'auth_token' => env('N8N_AUTH_TOKEN'),
+    ],
+
 ];

@@ -9,6 +9,8 @@ use Src\Admin\Trash\Domain\Entity\TrashItem;
 use Src\Admin\Blog\Infrastructure\Models\BlogEloquentModel;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
 use Src\Admin\Team\Infrastructure\Models\TeamEloquentModel;
+use App\Models\User as EloquentUserModel;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use DateTime;
@@ -19,6 +21,7 @@ final class EloquentTrashRepository implements TrashRepositoryContract
         'blog' => BlogEloquentModel::class,
         'procedure' => ProcedureEloquentModel::class,
         'team' => TeamEloquentModel::class,
+        'user' => EloquentUserModel::class,
     ];
 
     public function getAllDeleted(): array
@@ -26,15 +29,12 @@ final class EloquentTrashRepository implements TrashRepositoryContract
         $trashItems = new Collection();
 
         foreach ($this->models as $type => $modelClass) {
-            /** @var Model $model */
-            $model = new $modelClass();
-            
             // Requerimos que el modelo use SoftDeletes
-            if (!method_exists($model, 'onlyTrashed')) {
+            if (!in_array(SoftDeletes::class, class_uses_recursive($modelClass))) {
                 continue;
             }
 
-            $deletedRecords = $model::onlyTrashed()
+            $deletedRecords = $modelClass::onlyTrashed()
                 ->with($this->getRelationships($type))
                 ->get();
 
@@ -93,7 +93,7 @@ final class EloquentTrashRepository implements TrashRepositoryContract
     {
         return match ($type) {
             'blog', 'procedure' => $record->translations->first()?->title ?? "ID: {$record->id}",
-            'team' => $record->name ?? "ID: {$record->id}",
+            'team', 'user' => $record->name ?? "ID: {$record->id}",
             default => "ID: {$record->id}",
         };
     }

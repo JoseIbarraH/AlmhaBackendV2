@@ -70,6 +70,11 @@ class AppServiceProvider extends ServiceProvider
             \Src\Admin\Trash\Domain\Contracts\TrashRepositoryContract::class,
             \Src\Admin\Trash\Infrastructure\Repositories\EloquentTrashRepository::class
         );
+
+        $this->app->bind(
+            \Src\Landing\Subscription\Domain\Contracts\SubscriberRepositoryContract::class,
+            \Src\Landing\Subscription\Infrastructure\Repositories\EloquentSubscriberRepository::class
+        );
     }
 
     /**
