@@ -12,6 +12,8 @@ use Src\Admin\Blog\Infrastructure\Controllers\GetBlogController;
 use Src\Admin\Blog\Infrastructure\Controllers\ChangeBlogStatusController;
 use Src\Admin\Blog\Infrastructure\Controllers\UpdateBlogController;
 use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogController;
+use Src\Admin\Blog\Infrastructure\Controllers\UploadBlogMediaController;
+use Src\Admin\Blog\Infrastructure\Controllers\DeleteBlogMediaController;
 
 Route::prefix('blog-categories')->middleware(['auth:api'])->group(function () {
     Route::post('/', CreateBlogCategoryController::class)->middleware('permission:create_blog_categories');
@@ -27,4 +29,8 @@ Route::prefix('blogs')->middleware(['auth:api'])->group(function () {
     Route::post('/{id}', UpdateBlogController::class)->middleware('permission:edit_blogs');
     Route::delete('/{id}', DeleteBlogController::class)->middleware('permission:delete_blogs');
     Route::patch('/{id}/status', ChangeBlogStatusController::class)->middleware('permission:change_blog_status');
+
+    // Media
+    Route::post('/media', UploadBlogMediaController::class);
+    Route::delete('/media', DeleteBlogMediaController::class);
 });
