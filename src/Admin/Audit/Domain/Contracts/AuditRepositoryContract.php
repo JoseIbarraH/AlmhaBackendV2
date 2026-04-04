@@ -9,5 +9,5 @@ use Src\Admin\Audit\Domain\Audit;
 interface AuditRepositoryContract
 {
     public function save(Audit $audit): void;
-    public function getAll(): array;
+    public function getAll(int $page = 1, int $perPage = 15): array;
 }

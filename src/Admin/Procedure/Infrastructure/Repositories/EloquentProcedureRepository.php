@@ -304,24 +304,34 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
         }
     }
 
-    public function getAll(): array
+    public function getAll(int $page = 1, int $perPage = 15): array
     {
-        $procedures = $this->model->with('translations')->get();
+        $paginator = $this->model->with('translations')->paginate($perPage, ['*'], 'page', $page);
 
-        return $procedures->map(function ($eloquentProcedure) {
+        $items = collect($paginator->items())->map(function ($eloquentProcedure) {
             return $this->toDomainEntity($eloquentProcedure);
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
-    public function getAllByLang(string $lang): array
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15): array
     {
-        $procedures = $this->model->with(['translations' => function ($query) use ($lang) {
+        $paginator = $this->model->with(['translations' => function ($query) use ($lang) {
             $query->where('lang', $lang);
-        }])->get();
+        }])->paginate($perPage, ['*'], 'page', $page);
 
-        return $procedures->map(function ($eloquentProcedure) {
+        $items = collect($paginator->items())->map(function ($eloquentProcedure) {
             return $this->toDomainEntity($eloquentProcedure);
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     /**

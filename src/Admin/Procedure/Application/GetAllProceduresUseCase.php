@@ -15,8 +15,8 @@ final class GetAllProceduresUseCase
         $this->repository = $repository;
     }
 
-    public function execute(string $lang): array
+    public function execute(string $lang, int $page = 1, int $perPage = 15): array
     {
-        return $this->repository->getAllByLang($lang);
+        return $this->repository->getAllByLang($lang, $page, $perPage);
     }
 }

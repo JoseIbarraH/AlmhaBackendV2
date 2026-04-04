@@ -4,6 +4,7 @@ namespace Src\Admin\Role\Infrastructure\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Src\Admin\Role\Application\GetAllRolesUseCase;
 
 use OpenApi\Attributes as OA;
@@ -31,12 +32,16 @@ class GetRolesController extends Controller
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $roles = $this->useCase->execute();
+        $page = (int) $request->query('page', '1');
+        $perPage = (int) $request->query('per_page', '15');
+
+        $result = $this->useCase->execute($page, $perPage);
         
         return response()->json([
-            'data' => $roles
+            'data' => $result['items'],
+            'meta' => $result['meta']
         ], 200);
     }
 }

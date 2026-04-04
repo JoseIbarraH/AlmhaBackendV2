@@ -4,6 +4,7 @@ namespace Src\Admin\User\Infrastructure\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Src\Admin\User\Application\GetAllUsersUseCase;
 
 use OpenApi\Attributes as OA;
@@ -31,10 +32,16 @@ class GetAllUsersController extends Controller
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
+        $page = (int) $request->query('page', '1');
+        $perPage = (int) $request->query('per_page', '15');
+
+        $result = $this->useCase->execute($page, $perPage);
+
         return response()->json([
-            'data' => $this->useCase->execute()
+            'data' => $result['items'],
+            'meta' => $result['meta']
         ], 200);
     }
 }

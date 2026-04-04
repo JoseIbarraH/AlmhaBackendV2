@@ -16,8 +16,8 @@ class GetAllRolesUseCase
     /**
      * @return array
      */
-    public function execute(): array
+    public function execute(int $page = 1, int $perPage = 15): array
     {
-        return $this->repository->getAllRoles();
+        return $this->repository->getAllRoles($page, $perPage);
     }
 }

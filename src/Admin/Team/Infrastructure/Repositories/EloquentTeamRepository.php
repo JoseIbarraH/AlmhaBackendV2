@@ -84,13 +84,18 @@ final class EloquentTeamRepository implements TeamRepositoryContract
 
     }
 
-    public function getAll(): array
+    public function getAll(int $page = 1, int $perPage = 15): array
     {
-        $teams = $this->model->with(['translations', 'images.translations'])->get();
+        $paginator = $this->model->with(['translations', 'images.translations'])->paginate($perPage, ['*'], 'page', $page);
 
-        return $teams->map(function ($eloquentTeam) {
+        $items = collect($paginator->items())->map(function ($eloquentTeam) {
             return $this->toDomainEntity($eloquentTeam);
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     public function update(Team $team): void

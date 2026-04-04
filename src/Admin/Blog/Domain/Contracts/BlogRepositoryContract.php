@@ -20,8 +20,8 @@ interface BlogRepositoryContract
 
     public function delete(int $id): void;
 
-    public function getAll(): array;
+    public function getAll(int $page = 1, int $perPage = 15, ?string $search = null): array;
 
-    public function getAllByLang(string $lang): array;
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null): array;
 }
 

@@ -15,8 +15,8 @@ final class GetAllUsersUseCase
         $this->repository = $repository;
     }
 
-    public function execute(): array
+    public function execute(int $page = 1, int $perPage = 15): array
     {
-        return $this->repository->getAll();
+        return $this->repository->getAll($page, $perPage);
     }
 }

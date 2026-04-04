@@ -45,10 +45,15 @@ final class GetAllProceduresController
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $lang = $request->get('lang', 'es');
+        $lang = $request->query('lang', 'es');
         try {
-            $procedures = $this->useCase->execute($lang);
-            return response()->json($procedures);
+            $page = (int) $request->query('page', '1');
+            $perPage = (int) $request->query('per_page', '15');
+            $procedures = $this->useCase->execute($lang, $page, $perPage);
+            return response()->json([
+                'data' => $procedures['items'],
+                'meta' => $procedures['meta']
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage()

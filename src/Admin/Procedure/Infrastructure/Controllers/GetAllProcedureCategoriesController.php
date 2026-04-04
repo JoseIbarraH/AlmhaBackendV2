@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Procedure\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Src\Admin\Procedure\Application\GetAllProcedureCategoriesUseCase;
 use Exception;
 
@@ -33,13 +34,16 @@ final class GetAllProcedureCategoriesController
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         try {
-            $categories = $this->useCase->execute();
+            $page = (int) $request->query('page', '1');
+            $perPage = (int) $request->query('per_page', '15');
+            $categories = $this->useCase->execute($page, $perPage);
             
             return response()->json([
-                'data' => $categories
+                'data' => $categories['items'],
+                'meta' => $categories['meta']
             ], 200);
         } catch (Exception $e) {
             return response()->json([

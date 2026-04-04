@@ -134,24 +134,51 @@ final class EloquentBlogRepository implements BlogRepositoryContract
         }
     }
 
-    public function getAll(): array
+    public function getAll(int $page = 1, int $perPage = 15, ?string $search = null): array
     {
-        $blogs = $this->model->with('translations')->get();
+        $paginator = $this->model->with('translations')
+            ->when($search, function ($query, $search) {
+                $query->whereHas('translations', function ($query) use ($search) {
+                    $query->where('title', 'like', "%{$search}%")
+                        ->orWhere('content', 'like', "%{$search}%");
+                });
+            })
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        return $blogs->map(function ($eloquentBlog) {
+        $items = collect($paginator->items())->map(function ($eloquentBlog) {
             return $this->toDomainEntity($eloquentBlog);
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
-    public function getAllByLang(string $lang): array
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null): array
     {
-        $blogs = $this->model->with(['translations' => function ($query) use ($lang) {
+        $paginator = $this->model->with(['translations' => function ($query) use ($lang) {
             $query->where('lang', $lang);
-        }])->get();
+        }])
+            ->when($search, function ($query, $search) use ($lang) {
+                $query->whereHas('translations', function ($query) use ($search, $lang) {
+                    $query->where('lang', $lang)
+                        ->where(function ($query) use ($search) {
+                            $query->where('title', 'like', "%{$search}%")
+                                ->orWhere('content', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        return $blogs->map(function ($eloquentBlog) {
+        $items = collect($paginator->items())->map(function ($eloquentBlog) {
             return $this->toDomainEntity($eloquentBlog);
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     /**

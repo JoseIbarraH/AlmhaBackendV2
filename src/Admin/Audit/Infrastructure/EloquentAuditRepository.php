@@ -30,8 +30,13 @@ final class EloquentAuditRepository implements AuditRepositoryContract
         ]);
     }
 
-    public function getAll(): array
+    public function getAll(int $page = 1, int $perPage = 15): array
     {
-        return $this->model->all()->toArray();
+        $paginator = $this->model->paginate($perPage, ['*'], 'page', $page);
+
+        return [
+            'items' => collect($paginator->items())->toArray(),
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 }

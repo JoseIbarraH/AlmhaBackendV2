@@ -57,13 +57,18 @@ final class EloquentBlogCategoryRepository implements BlogCategoryRepositoryCont
         return $this->mapToDomain($eloquentCat);
     }
 
-    public function getAll(): array
+    public function getAll(int $page = 1, int $perPage = 15): array
     {
-        $categories = $this->model->with('translations')->get();
+        $paginator = $this->model->with('translations')->paginate($perPage, ['*'], 'page', $page);
 
-        return $categories->map(function ($eloquentCat) {
+        $items = collect($paginator->items())->map(function ($eloquentCat) {
             return $this->mapToDomain($eloquentCat);
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     public function update(BlogCategory $category): void

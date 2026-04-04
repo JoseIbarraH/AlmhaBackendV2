@@ -9,7 +9,7 @@ interface TrashRepositoryContract
     /**
      * @return \Src\Admin\Trash\Domain\Entity\TrashItem[]
      */
-    public function getAllDeleted(): array;
+    public function getAllDeleted(int $page = 1, int $perPage = 15): array;
 
     public function restore(string $type, string|int $id): void;
 

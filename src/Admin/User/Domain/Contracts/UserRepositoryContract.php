@@ -19,7 +19,7 @@ interface UserRepositoryContract
     
     public function delete(UserId $id): void;
     
-    public function getAll(): array;
+    public function getAll(int $page = 1, int $perPage = 15): array;
 
     public function hasAdmin(): bool;
 }

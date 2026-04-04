@@ -43,16 +43,24 @@ class SpatieRoleRepository implements RoleRepositoryContract
     /**
      * @return array
      */
-    public function getAllRoles(): array
+    public function getAllRoles(int $page = 1, int $perPage = 15): array
     {
-        return Role::all()->toArray();
+        $paginator = Role::paginate($perPage, ['*'], 'page', $page);
+        return [
+            'items' => collect($paginator->items())->toArray(),
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     /**
      * @return array
      */
-    public function getAllPermissions(): array
+    public function getAllPermissions(int $page = 1, int $perPage = 15): array
     {
-        return \Spatie\Permission\Models\Permission::all()->toArray();
+        $paginator = \Spatie\Permission\Models\Permission::paginate($perPage, ['*'], 'page', $page);
+        return [
+            'items' => collect($paginator->items())->toArray(),
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 }

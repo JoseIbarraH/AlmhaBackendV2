@@ -22,10 +22,10 @@ interface RoleRepositoryContract
     /**
      * @return array
      */
-    public function getAllRoles(): array;
+    public function getAllRoles(int $page = 1, int $perPage = 15): array;
 
     /**
      * @return array
      */
-    public function getAllPermissions(): array;
+    public function getAllPermissions(int $page = 1, int $perPage = 15): array;
 }

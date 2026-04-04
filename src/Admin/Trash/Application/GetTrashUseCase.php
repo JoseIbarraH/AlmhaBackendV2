@@ -15,8 +15,8 @@ final class GetTrashUseCase
         $this->repository = $repository;
     }
 
-    public function execute(): array
+    public function execute(int $page = 1, int $perPage = 15): array
     {
-        return $this->repository->getAllDeleted();
+        return $this->repository->getAllDeleted($page, $perPage);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Team\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Src\Admin\Team\Application\GetAllTeamsUseCase;
 
 use OpenApi\Attributes as OA;
@@ -32,10 +33,16 @@ final class GetAllTeamsController
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $teams = $this->useCase->execute();
+        $page = (int) $request->query('page', '1');
+        $perPage = (int) $request->query('per_page', '15');
 
-        return response()->json($teams, 200);
+        $result = $this->useCase->execute($page, $perPage);
+
+        return response()->json([
+            'data' => $result['items'],
+            'meta' => $result['meta']
+        ], 200);
     }
 }

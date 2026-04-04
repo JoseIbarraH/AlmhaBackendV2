@@ -47,10 +47,14 @@ final class GetAllBlogsController
     {
         try {
             $lang = $request->header('Accept-Language', 'es');
-            $blogs = $this->useCase->execute($lang);
+            $page = (int) $request->query('page', '1');
+            $perPage = (int) $request->query('per_page', '15');
+            $search = $request->query('search');
+            $blogs = $this->useCase->execute($lang, $page, $perPage, $search);
             
             return response()->json([
-                'data' => $blogs
+                'data' => $blogs['items'],
+                'meta' => $blogs['meta']
             ], 200);
         } catch (Exception $e) {
             return response()->json([

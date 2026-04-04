@@ -16,8 +16,8 @@ class GetAllPermissionsUseCase
     /**
      * @return array
      */
-    public function execute(): array
+    public function execute(int $page = 1, int $perPage = 15): array
     {
-        return $this->repository->getAllPermissions();
+        return $this->repository->getAllPermissions($page, $perPage);
     }
 }

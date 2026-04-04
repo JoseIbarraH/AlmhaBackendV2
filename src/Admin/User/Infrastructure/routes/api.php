@@ -7,6 +7,9 @@ use Src\Admin\User\Infrastructure\Controllers\GetAllUsersController;
 use Src\Admin\User\Infrastructure\Controllers\GetUserByCriteriaController;
 use Src\Admin\User\Infrastructure\Controllers\UpdateUserController;
 use Src\Admin\User\Infrastructure\Controllers\DeleteUserController;
+use Src\Admin\User\Infrastructure\Controllers\GetAuthenticatedUserController;
+
+Route::get('/user', GetAuthenticatedUserController::class)->middleware('auth:api');
 
 Route::prefix('users')
     ->middleware(['auth:api'])

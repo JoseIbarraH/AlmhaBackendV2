@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Audit\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Src\Admin\Audit\Application\GetAuditsUseCase;
 use OpenApi\Attributes as OA;
 
@@ -31,12 +32,16 @@ final class GetAuditsController
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $audits = $this->useCase->execute();
+        $page = (int) $request->query('page', '1');
+        $perPage = (int) $request->query('per_page', '15');
+        
+        $audits = $this->useCase->execute($page, $perPage);
 
         return response()->json([
-            'data' => $audits
+            'data' => $audits['items'],
+            'meta' => $audits['meta'],
         ], 200);
     }
 }

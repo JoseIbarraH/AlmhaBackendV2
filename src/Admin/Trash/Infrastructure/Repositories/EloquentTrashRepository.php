@@ -24,7 +24,7 @@ final class EloquentTrashRepository implements TrashRepositoryContract
         'user' => EloquentUserModel::class,
     ];
 
-    public function getAllDeleted(): array
+    public function getAllDeleted(int $page = 1, int $perPage = 15): array
     {
         $trashItems = new Collection();
 
@@ -48,7 +48,23 @@ final class EloquentTrashRepository implements TrashRepositoryContract
             }
         }
 
-        return $trashItems->sortByDesc(fn($item) => $item->deletedAt())->values()->toArray();
+        $sortedItems = $trashItems->sortByDesc(fn($item) => $item->deletedAt())->values();
+        $total = $sortedItems->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $items = $sortedItems->slice(($page - 1) * $perPage, $perPage)->values()->toArray();
+
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $items,
+            $total,
+            $perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+        );
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     public function restore(string $type, string|int $id): void

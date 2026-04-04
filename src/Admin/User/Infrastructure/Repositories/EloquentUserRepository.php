@@ -125,11 +125,11 @@ final class EloquentUserRepository implements UserRepositoryContract
         }
     }
 
-    public function getAll(): array
+    public function getAll(int $page = 1, int $perPage = 15): array
     {
-        $users = $this->eloquentUserModel->all();
+        $paginator = $this->eloquentUserModel->paginate($perPage, ['*'], 'page', $page);
         
-        return $users->map(function (EloquentUserModel $user) {
+        $items = collect($paginator->items())->map(function (EloquentUserModel $user) {
             return [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -139,6 +139,11 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'roles' => $user->getRoleNames()->toArray(),
             ];
         })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
     }
 
     public function hasAdmin(): bool

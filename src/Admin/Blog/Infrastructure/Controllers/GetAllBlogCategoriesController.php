@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Src\Admin\Blog\Application\GetAllBlogCategoriesUseCase;
 use Exception;
 
@@ -33,15 +34,16 @@ final class GetAllBlogCategoriesController
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         try {
-            $categories = $this->useCase->execute();
+            $page = (int) $request->query('page', '1');
+            $perPage = (int) $request->query('per_page', '15');
+            $categories = $this->useCase->execute($page, $perPage);
             
-            // Format models to arrays (the repository returns an array of models or aggregates depending on implementation)
-            // Assuming the repo returns Eloquent models directly based on typical implementation, or array data.
             return response()->json([
-                'data' => $categories
+                'data' => $categories['items'],
+                'meta' => $categories['meta']
             ], 200);
         } catch (Exception $e) {
             return response()->json([
