@@ -18,7 +18,7 @@ final class DeleteBlogMediaController extends Controller
         $this->useCase = $useCase;
     }
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, int $id): JsonResponse
     {
         $request->validate([
             'url' => 'required|string',

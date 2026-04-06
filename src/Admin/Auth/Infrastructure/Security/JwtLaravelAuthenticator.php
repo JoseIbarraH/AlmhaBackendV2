@@ -14,8 +14,13 @@ class JwtLaravelAuthenticator implements AuthenticatorContract
      * @return AuthToken
      * @throws InvalidCredentialsException
      */
-    public function login(array $credentials): AuthToken
+    public function login(array $credentials, bool $rememberMe = false): AuthToken
     {
+        if ($rememberMe) {
+            // Set TTL to 30 days (43200 minutes)
+            config(['jwt.ttl' => 43200]);
+        }
+
         $token = Auth::guard('api')->attempt($credentials);
 
         if (!$token) {

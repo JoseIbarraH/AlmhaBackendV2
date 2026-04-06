@@ -56,15 +56,17 @@ class LoginController extends Controller
         ]);
 
         try {
+            $rememberMe = $request->input('remember_me', false);
             $authToken = $this->loginUseCase->execute(
                 $request->input('email'),
-                $request->input('password')
+                $request->input('password'),
+                $rememberMe
             );
 
             return response()->json([
                 'access_token' => $authToken->value(),
                 'token_type' => 'bearer',
-                'expires_in' => config('jwt.ttl', 60) * 60
+                'expires_in' => $rememberMe ? 43200 * 60 : config('jwt.ttl', 60) * 60
             ], 200);
             
         } catch (InvalidCredentialsException $e) {

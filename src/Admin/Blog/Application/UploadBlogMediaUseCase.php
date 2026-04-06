@@ -9,12 +9,15 @@ use Illuminate\Support\Facades\Storage;
 
 final class UploadBlogMediaUseCase
 {
-    public function execute(UploadedFile $file): string
+    public function execute(int $blogId, UploadedFile $file): string
     {
-        // Store the file in public/blogs/media folder
-        $path = $file->store('blogs/media', 'public');
+        // Store the file in s3 bucket under blogs/{id}/media folder
+        $path = $file->store("blogs/{$blogId}/media", 's3');
         
         // Return public URL to be accessible from the frontend
-        return Storage::disk('public')->url($path);
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('s3');
+        
+        return $disk->url($path);
     }
 }

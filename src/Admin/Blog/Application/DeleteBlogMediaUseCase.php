@@ -10,16 +10,22 @@ final class DeleteBlogMediaUseCase
 {
     public function execute(string $url): void
     {
-        // Extract relative path from url
-        // e.g. "http://localhost:8000/storage/blogs/media/123.jpg" -> "/storage/blogs/media/123.jpg" or "blogs/media/123.jpg"
-        $parsedUrl = parse_url($url, PHP_URL_PATH);
+        // Extract relative path from S3 url
+        $baseUrl = config('filesystems.disks.s3.url');
         
-        if (!$parsedUrl) {
+        if (str_starts_with($url, $baseUrl)) {
+            $path = substr($url, strlen($baseUrl));
+            
+            if (Storage::disk('s3')->exists($path)) {
+                Storage::disk('s3')->delete($path);
+            }
             return;
         }
 
+        // Fallback for local storage if needed
+        $parsedUrl = parse_url($url, PHP_URL_PATH);
         $prefix = '/storage/';
-        if (str_starts_with($parsedUrl, $prefix)) {
+        if ($parsedUrl && str_starts_with($parsedUrl, $prefix)) {
             $path = substr($parsedUrl, strlen($prefix));
             
             if (Storage::disk('public')->exists($path)) {

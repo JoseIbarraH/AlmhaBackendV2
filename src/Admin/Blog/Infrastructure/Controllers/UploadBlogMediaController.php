@@ -18,13 +18,13 @@ final class UploadBlogMediaController extends Controller
         $this->useCase = $useCase;
     }
 
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, int $id): JsonResponse
     {
         $request->validate([
             'file' => 'required|file|mimes:jpeg,png,jpg,gif,svg,mp4,webm,mov|max:51200', // 50MB max
         ]);
 
-        $url = $this->useCase->execute($request->file('file'));
+        $url = $this->useCase->execute($id, $request->file('file'));
 
         return response()->json([
             'success' => true,

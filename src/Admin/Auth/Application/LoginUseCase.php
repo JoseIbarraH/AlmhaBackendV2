@@ -21,11 +21,11 @@ class LoginUseCase
      * @return AuthToken
      * @throws InvalidCredentialsException
      */
-    public function execute(string $email, string $password): AuthToken
+    public function execute(string $email, string $password, bool $rememberMe = false): AuthToken
     {
         return $this->authenticator->login([
             'email' => $email,
             'password' => $password
-        ]);
+        ], $rememberMe);
     }
 }

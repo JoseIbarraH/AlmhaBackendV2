@@ -31,6 +31,6 @@ Route::prefix('blogs')->middleware(['auth:api'])->group(function () {
     Route::patch('/{id}/status', ChangeBlogStatusController::class)->middleware('permission:change_blog_status');
 
     // Media
-    Route::post('/media', UploadBlogMediaController::class);
-    Route::delete('/media', DeleteBlogMediaController::class);
+    Route::post('/{id}/media', UploadBlogMediaController::class);
+    Route::delete('/{id}/media', DeleteBlogMediaController::class);
 });
