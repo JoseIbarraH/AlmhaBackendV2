@@ -21,7 +21,7 @@ interface ProcedureRepositoryContract
 
     public function delete(int $id): void;
 
-    public function getAll(int $page = 1, int $perPage = 15): array;
+    public function getAll(int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array;
 
-    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15): array;
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array;
 }

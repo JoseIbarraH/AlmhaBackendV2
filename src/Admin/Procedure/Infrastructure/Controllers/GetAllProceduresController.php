@@ -27,11 +27,21 @@ final class GetAllProceduresController
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(
-                name: "lang",
+                schema: new OA\Schema(type: "string", default: "es")
+            ),
+            new OA\Parameter(
+                name: "search",
                 in: "query",
                 required: false,
-                description: "Idioma de los contenidos (es, en)",
-                schema: new OA\Schema(type: "string", default: "es")
+                description: "Buscar por título o subtítulo",
+                schema: new OA\Schema(type: "string")
+            ),
+            new OA\Parameter(
+                name: "status",
+                in: "query",
+                required: false,
+                description: "Filtrar por estado (published, draft)",
+                schema: new OA\Schema(type: "string")
             )
         ],
         responses: [
@@ -49,7 +59,9 @@ final class GetAllProceduresController
         try {
             $page = (int) $request->query('page', '1');
             $perPage = (int) $request->query('per_page', '15');
-            $procedures = $this->useCase->execute($lang, $page, $perPage);
+            $search = $request->query('search');
+            $status = $request->query('status');
+            $procedures = $this->useCase->execute($lang, $page, $perPage, $search, $status);
             return response()->json([
                 'data' => $procedures['items'],
                 'meta' => $procedures['meta']

@@ -32,6 +32,13 @@ final class GetAllBlogsController
                 required: false,
                 description: "Idioma de los contenidos (es, en)",
                 schema: new OA\Schema(type: "string", default: "es")
+            ),
+            new OA\Parameter(
+                name: "status",
+                in: "query",
+                required: false,
+                description: "Filtrar por estado (published, draft, scheduled)",
+                schema: new OA\Schema(type: "string")
             )
         ],
         responses: [
@@ -50,7 +57,8 @@ final class GetAllBlogsController
             $page = (int) $request->query('page', '1');
             $perPage = (int) $request->query('per_page', '15');
             $search = $request->query('search');
-            $blogs = $this->useCase->execute($lang, $page, $perPage, $search);
+            $status = $request->query('status');
+            $blogs = $this->useCase->execute($lang, $page, $perPage, $search, $status);
             
             return response()->json([
                 'data' => $blogs['items'],

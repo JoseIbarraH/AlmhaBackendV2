@@ -134,9 +134,12 @@ final class EloquentBlogRepository implements BlogRepositoryContract
         }
     }
 
-    public function getAll(int $page = 1, int $perPage = 15, ?string $search = null): array
+    public function getAll(int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array
     {
         $paginator = $this->model->with('translations')
+            ->when($status, function ($query, $status) {
+                $query->where('status', $status);
+            })
             ->when($search, function ($query, $search) {
                 $query->whereHas('translations', function ($query) use ($search) {
                     $query->where('title', 'like', "%{$search}%")
@@ -155,11 +158,14 @@ final class EloquentBlogRepository implements BlogRepositoryContract
         ];
     }
 
-    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null): array
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array
     {
         $paginator = $this->model->with(['translations' => function ($query) use ($lang) {
             $query->where('lang', $lang);
         }])
+            ->when($status, function ($query, $status) {
+                $query->where('status', $status);
+            })
             ->when($search, function ($query, $search) use ($lang) {
                 $query->whereHas('translations', function ($query) use ($search, $lang) {
                     $query->where('lang', $lang)
