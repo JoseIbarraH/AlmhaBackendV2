@@ -74,6 +74,22 @@ final class EloquentProcedureCategoryRepository implements ProcedureCategoryRepo
         ];
     }
 
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15): array
+    {
+        // Traemos todas las traducciones para que mapToDomain pueda hacer el fallback si no existe
+        // la traducción en el $lang específico.
+        $paginator = $this->model->with('translations')->paginate($perPage, ['*'], 'page', $page);
+
+        $items = collect($paginator->items())->map(function ($eloquentCat) use ($lang) {
+            return $this->mapToDomain($eloquentCat, $lang);
+        })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
+    }
+
     public function update(ProcedureCategory $category): void
     {
         DB::transaction(function () use ($category) {
@@ -106,7 +122,7 @@ final class EloquentProcedureCategoryRepository implements ProcedureCategoryRepo
         });
     }
 
-    private function mapToDomain($eloquentCat): ProcedureCategory
+    private function mapToDomain($eloquentCat, ?string $lang = null): ProcedureCategory
     {
         $translations = $eloquentCat->translations->map(function ($t) {
             return new ProcedureCategoryTranslation(
@@ -116,10 +132,18 @@ final class EloquentProcedureCategoryRepository implements ProcedureCategoryRepo
             );
         })->toArray();
 
+        $localizedName = null;
+        if ($lang) {
+            $translationModel = $eloquentCat->translations->firstWhere('lang', $lang) 
+                                ?? $eloquentCat->translations->first();
+            $localizedName = $translationModel?->title;
+        }
+
         return new ProcedureCategory(
             $eloquentCat->code,
             $translations,
-            $eloquentCat->id
+            $eloquentCat->id,
+            $localizedName
         );
     }
 

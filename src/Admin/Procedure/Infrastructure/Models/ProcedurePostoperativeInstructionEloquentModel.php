@@ -14,6 +14,10 @@ class ProcedurePostoperativeInstructionEloquentModel extends Model
         'order'
     ];
 
+    protected $casts = [
+        'order' => 'integer'
+    ];
+
     public function procedure()
     {
         return $this->belongsTo(ProcedureEloquentModel::class, 'procedure_id');

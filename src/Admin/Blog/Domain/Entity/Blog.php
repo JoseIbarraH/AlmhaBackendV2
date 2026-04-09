@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Blog\Domain\Entity;
 
 use DateTime;
+use DateTimeInterface;
 use RuntimeException;
 
 final class Blog implements \JsonSerializable
@@ -18,6 +19,7 @@ final class Blog implements \JsonSerializable
     private string $status;
     private ?DateTime $publishedAt;
     private ?DateTime $notificationSentAt;
+    private ?string $title;
 
     /** @var BlogTranslation[] */
     private array $translations;
@@ -32,7 +34,8 @@ final class Blog implements \JsonSerializable
         ?DateTime $publishedAt = null,
         ?DateTime $notificationSentAt = null,
         array $translations = [],
-        ?int $id = null
+        ?int $id = null,
+        ?string $title = null
     ) {
         if (!in_array($status, ['draft', 'published', 'archived'])) {
             throw new RuntimeException("Invalid blog status: $status");
@@ -48,6 +51,7 @@ final class Blog implements \JsonSerializable
         $this->notificationSentAt = $notificationSentAt;
         $this->translations = $translations;
         $this->id = $id;
+        $this->title = $title;
     }
 
     // Getters for Aggregate Root
@@ -102,6 +106,7 @@ final class Blog implements \JsonSerializable
             'status' => $this->status,
             'publishedAt' => $this->publishedAt ? $this->publishedAt->format(DateTime::ATOM) : null,
             'notificationSentAt' => $this->notificationSentAt ? $this->notificationSentAt->format(DateTime::ATOM) : null,
+            'title' => $this->title ?? (count($this->translations) > 0 ? $this->translations[0]->title() : null),
             'translations' => $this->translations,
         ];
     }

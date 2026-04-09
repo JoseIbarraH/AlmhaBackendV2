@@ -60,7 +60,6 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
                 $section = $eloquentProcedure->sections()->create([
                     'type' => $s->type(),
                     'image' => $s->image(),
-                    'order' => $s->order(),
                 ]);
                 foreach ($s->translations() as $st) {
                     $section->translations()->create([
@@ -177,7 +176,6 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
                     $section = $eloquentProcedure->sections()->create([
                         'type' => $s->type(),
                         'image' => $s->image(),
-                        'order' => $s->order(),
                     ]);
                     foreach ($s->translations() as $st) {
                         $section->translations()->create([
@@ -248,15 +246,27 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
         });
     }
 
-    public function findById(int $id): ?Procedure
+    public function findById(int $id, ?string $lang = null): ?Procedure
     {
         $eloquentProcedure = $this->model->with([
-            'translations',
-            'sections.translations',
-            'faqs.translations',
-            'postoperativeInstructions.translations',
-            'preparationSteps.translations',
-            'recoveryPhases.translations',
+            'translations' => function ($q) use ($lang) {
+                if ($lang) $q->where('lang', $lang);
+            },
+            'sections.translations' => function ($q) use ($lang) {
+                if ($lang) $q->where('lang', $lang);
+            },
+            'faqs.translations' => function ($q) use ($lang) {
+                if ($lang) $q->where('lang', $lang);
+            },
+            'postoperativeInstructions.translations' => function ($q) use ($lang) {
+                if ($lang) $q->where('lang', $lang);
+            },
+            'preparationSteps.translations' => function ($q) use ($lang) {
+                if ($lang) $q->where('lang', $lang);
+            },
+            'recoveryPhases.translations' => function ($q) use ($lang) {
+                if ($lang) $q->where('lang', $lang);
+            },
             'gallery'
         ])->find($id);
 
@@ -330,9 +340,8 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
 
     public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array
     {
-        $paginator = $this->model->with(['translations' => function ($query) use ($lang) {
-            $query->where('lang', $lang);
-        }])
+        // Traeremos TODAS las traducciones para que toDomainEntity pueda aplicar el fallback
+        $paginator = $this->model->with(['translations'])
             ->when($status, function ($query, $status) {
                 $query->where('status', $status);
             })
@@ -347,8 +356,8 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
             })
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $items = collect($paginator->items())->map(function ($eloquentProcedure) {
-            return $this->toDomainEntity($eloquentProcedure);
+        $items = collect($paginator->items())->map(function ($eloquentProcedure) use ($lang) {
+            return $this->toDomainEntity($eloquentProcedure, $lang);
         })->toArray();
 
         return [
@@ -360,49 +369,57 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
     /**
      * Convierte un modelo Eloquent a entidad de dominio
      */
-    private function toDomainEntity($eloquentProcedure): Procedure
+    private function toDomainEntity(ProcedureEloquentModel $eloquentProcedure, ?string $lang = null): Procedure
     {
         $translations = $eloquentProcedure->translations->map(function ($t) {
             return new ProcedureTranslation($t->id, $t->lang, $t->slug, $t->title, $t->subtitle);
         })->toArray();
 
+        $localizedTitle = null;
+        if ($lang) {
+            $translationModel = $eloquentProcedure->translations->firstWhere('lang', $lang)
+                                ?? $eloquentProcedure->translations->first();
+            $localizedTitle = $translationModel?->title;
+        }
+
         $sections = $eloquentProcedure->sections->map(function ($s) {
             $st = $s->translations->map(function ($st) {
                 return new ProcedureSectionTranslation($st->id, $st->lang, $st->title, $st->content_one, $st->content_two);
             })->toArray();
-            return new ProcedureSection($s->id, $s->type, $s->image, $s->order, $st);
+            return new ProcedureSection($s->id, $s->type, $s->image, $st);
         })->toArray();
 
         $faqs = $eloquentProcedure->faqs->map(function ($f) {
             $ft = $f->translations->map(function ($ft) {
                 return new ProcedureFaqTranslation($ft->id, $ft->lang, $ft->question, $ft->answer);
             })->toArray();
-            return new ProcedureFaq($f->id, $f->order, $ft);
+            return new ProcedureFaq($f->id, (int) $f->order, $ft);
         })->toArray();
 
         $instructions = $eloquentProcedure->postoperativeInstructions->map(function ($pi) {
             $pit = $pi->translations->map(function ($pit) {
                 return new ProcedurePostoperativeInstructionTranslation($pit->id, $pit->lang, $pit->content);
             })->toArray();
-            return new ProcedurePostoperativeInstruction($pi->id, $pi->type, $pi->order, $pit);
+            return new ProcedurePostoperativeInstruction($pi->id, $pi->type, (int) $pi->order, $pit);
         })->toArray();
 
         $steps = $eloquentProcedure->preparationSteps->map(function ($ps) {
             $pst = $ps->translations->map(function ($pst) {
                 return new ProcedurePreparationStepTranslation($pst->id, $pst->lang, $pst->title, $pst->description);
             })->toArray();
-            return new ProcedurePreparationStep($ps->id, $ps->order, $pst);
+            return new ProcedurePreparationStep($ps->id, (int) $ps->order, $pst);
         })->toArray();
 
         $phases = $eloquentProcedure->recoveryPhases->map(function ($rp) {
             $rpt = $rp->translations->map(function ($rpt) {
                 return new ProcedureRecoveryPhaseTranslation($rpt->id, $rpt->lang, $rpt->period, $rpt->title, $rpt->description);
             })->toArray();
-            return new ProcedureRecoveryPhase($rp->id, $rp->order, $rpt);
+            return new ProcedureRecoveryPhase($rp->id, (int) $rp->order, $rpt);
         })->toArray();
 
         $gallery = $eloquentProcedure->gallery->map(function ($g) {
-            return new ProcedureResultGallery($g->id, $g->path, $g->type, $g->pair_id, $g->order);
+            $pairId = $g->pair_id !== null ? (int) $g->pair_id : null;
+            return new ProcedureResultGallery($g->id, $g->path, $g->type, $pairId, (int) $g->order);
         })->toArray();
 
         return new Procedure(
@@ -418,7 +435,8 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
             $instructions,
             $steps,
             $phases,
-            $gallery
+            $gallery,
+            $localizedTitle
         );
     }
 }

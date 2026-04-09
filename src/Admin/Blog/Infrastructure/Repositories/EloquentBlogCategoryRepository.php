@@ -71,6 +71,21 @@ final class EloquentBlogCategoryRepository implements BlogCategoryRepositoryCont
         ];
     }
 
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15): array
+    {
+        $paginator = $this->model->with('translations')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $items = collect($paginator->items())->map(function ($eloquentCat) use ($lang) {
+            return $this->mapToDomain($eloquentCat, $lang);
+        })->toArray();
+
+        return [
+            'items' => $items,
+            'meta' => collect($paginator->toArray())->except('data')->toArray()
+        ];
+    }
+
     public function update(BlogCategory $category): void
     {
         DB::transaction(function () use ($category) {
@@ -103,20 +118,27 @@ final class EloquentBlogCategoryRepository implements BlogCategoryRepositoryCont
         });
     }
 
-    private function mapToDomain($eloquentCat): BlogCategory
+    private function mapToDomain($eloquentCat, ?string $lang = null): BlogCategory
     {
         $translations = $eloquentCat->translations->map(function ($t) {
             return new BlogCategoryTranslation(
+                $t->id,
                 $t->lang,
-                $t->title,
-                $t->id
+                $t->title
             );
         })->toArray();
+
+        $localizedName = null;
+        if ($lang) {
+            $found = $eloquentCat->translations->where('lang', $lang)->first();
+            $localizedName = $found ? $found->title : ($eloquentCat->translations->first()?->title ?? null);
+        }
 
         return new BlogCategory(
             $eloquentCat->code,
             $translations,
-            $eloquentCat->id
+            $eloquentCat->id,
+            $localizedName
         );
     }
 }

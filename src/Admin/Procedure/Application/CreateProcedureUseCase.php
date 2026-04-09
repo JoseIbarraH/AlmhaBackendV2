@@ -63,7 +63,10 @@ final class CreateProcedureUseCase
         $instructions = $this->createInstructions($postoperativeInstructionsData, $baseLang, $targetLanguages);
         $steps = $this->createSteps($preparationStepsData, $baseLang, $targetLanguages);
         $phases = $this->createPhases($recoveryPhasesData, $baseLang, $targetLanguages);
-        $gallery = array_map(fn($g) => new ProcedureResultGallery(null, $g['path'], $g['type'], $g['pairId'] ?? null, $g['order'] ?? 0), $galleryData);
+        $gallery = array_map(function($g) {
+            $pairId = isset($g['pairId']) && $g['pairId'] !== '' ? (int) $g['pairId'] : null;
+            return new ProcedureResultGallery(null, $g['path'], $g['type'], $pairId, (int) ($g['order'] ?? 0));
+        }, $galleryData);
 
         $procedure = new Procedure(
             null,
@@ -95,7 +98,7 @@ final class CreateProcedureUseCase
                 $tC2 = ($d['contentTwo'] ?? null) ? $this->translator->translate($d['contentTwo'], $lang, $baseLang) : null;
                 $ts[] = new ProcedureSectionTranslation(null, $lang, $tTitle, $tC1, $tC2);
             }
-            return new ProcedureSection(null, $d['type'], $d['image'] ?? null, $d['order'] ?? 0, $ts);
+            return new ProcedureSection(null, $d['type'], $d['image'] ?? null, $ts);
         }, $data);
     }
 
@@ -109,7 +112,7 @@ final class CreateProcedureUseCase
                 $tA = $this->translator->translate($d['answer'], $lang, $baseLang);
                 $ts[] = new ProcedureFaqTranslation(null, $lang, $tQ, $tA);
             }
-            return new ProcedureFaq(null, $d['order'] ?? 0, $ts);
+            return new ProcedureFaq(null, (int) ($d['order'] ?? 0), $ts);
         }, $data);
     }
 
@@ -122,7 +125,7 @@ final class CreateProcedureUseCase
                 $tC = $this->translator->translate($d['content'], $lang, $baseLang);
                 $ts[] = new ProcedurePostoperativeInstructionTranslation(null, $lang, $tC);
             }
-            return new ProcedurePostoperativeInstruction(null, $d['type'], $d['order'] ?? 0, $ts);
+            return new ProcedurePostoperativeInstruction(null, $d['type'], (int) ($d['order'] ?? 0), $ts);
         }, $data);
     }
 
@@ -136,7 +139,7 @@ final class CreateProcedureUseCase
                 $tD = ($d['description'] ?? null) ? $this->translator->translate($d['description'], $lang, $baseLang) : null;
                 $ts[] = new ProcedurePreparationStepTranslation(null, $lang, $tT, $tD);
             }
-            return new ProcedurePreparationStep(null, $d['order'] ?? 0, $ts);
+            return new ProcedurePreparationStep(null, (int) ($d['order'] ?? 0), $ts);
         }, $data);
     }
 
@@ -151,7 +154,7 @@ final class CreateProcedureUseCase
                 $tD = ($d['description'] ?? null) ? $this->translator->translate($d['description'], $lang, $baseLang) : null;
                 $ts[] = new ProcedureRecoveryPhaseTranslation(null, $lang, $tP, $tT, $tD);
             }
-            return new ProcedureRecoveryPhase(null, $d['order'] ?? 0, $ts);
+            return new ProcedureRecoveryPhase(null, (int) ($d['order'] ?? 0), $ts);
         }, $data);
     }
 }

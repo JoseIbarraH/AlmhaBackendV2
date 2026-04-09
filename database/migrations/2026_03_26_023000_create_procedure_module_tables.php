@@ -30,7 +30,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('image')->nullable();
-            $table->foreignId('category_code')->index();
+            $table->string('category_code')->index();
             $table->string('status')->default('draft'); // draft, published, archived
             $table->integer('views')->default(0);
             $table->timestamps();
@@ -55,7 +55,6 @@ return new class extends Migration
             $table->foreignId('procedure_id')->constrained('procedures')->onDelete('cascade');
             $table->string('type'); // what_is, technique, recovery
             $table->string('image')->nullable();
-            $table->integer('order')->default(0);
             $table->timestamps();
         });
 

@@ -16,8 +16,8 @@ final class GetProcedureUseCase
         $this->repository = $repository;
     }
 
-    public function execute(int $id): ?Procedure
+    public function execute(int $id, ?string $lang = null): ?Procedure
     {
-        return $this->repository->findById($id);
+        return $this->repository->findById($id, $lang);
     }
 }

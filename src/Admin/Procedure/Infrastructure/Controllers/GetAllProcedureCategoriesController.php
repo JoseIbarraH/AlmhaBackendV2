@@ -37,9 +37,10 @@ final class GetAllProcedureCategoriesController
     public function __invoke(Request $request): JsonResponse
     {
         try {
+            $lang = $request->header('Accept-Language', 'es');
             $page = (int) $request->query('page', '1');
             $perPage = (int) $request->query('per_page', '15');
-            $categories = $this->useCase->execute($page, $perPage);
+            $categories = $this->useCase->execute($lang, $page, $perPage);
             
             return response()->json([
                 'data' => $categories['items'],

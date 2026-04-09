@@ -11,8 +11,7 @@ class ProcedureSectionEloquentModel extends Model
     protected $fillable = [
         'procedure_id',
         'type',
-        'image',
-        'order'
+        'image'
     ];
 
     public function procedure()

@@ -11,7 +11,7 @@ interface ProcedureRepositoryContract
 {
     public function save(Procedure $procedure): int;
 
-    public function findById(int $id): ?Procedure;
+    public function findById(int $id, ?string $lang = null): ?Procedure;
 
     public function findBySlug(string $slug, string $lang): ?Procedure;
 

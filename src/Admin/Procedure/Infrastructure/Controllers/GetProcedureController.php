@@ -43,10 +43,11 @@ final class GetProcedureController
             new OA\Response(response: 401, description: "No autorizado")
         ]
     )]
-    public function __invoke(int $id): JsonResponse
+    public function __invoke(int $id, \Illuminate\Http\Request $request): JsonResponse
     {
+        $lang = $request->header('Accept-Language', 'es');
         try {
-            $procedure = $this->useCase->execute($id);
+            $procedure = $this->useCase->execute($id, $lang);
             if (!$procedure) {
                 return response()->json(['error' => 'Not found'], 404);
             }

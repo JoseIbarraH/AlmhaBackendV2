@@ -25,6 +25,15 @@ final class GetAllBlogCategoriesController
         summary: "Listar todas las categorías de blog",
         tags: ["Blog"],
         security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "Accept-Language",
+                in: "header",
+                required: false,
+                description: "Idioma de los contenidos (es, en)",
+                schema: new OA\Schema(type: "string", default: "es")
+            )
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -37,9 +46,10 @@ final class GetAllBlogCategoriesController
     public function __invoke(Request $request): JsonResponse
     {
         try {
+            $lang = $request->header('Accept-Language', 'es');
             $page = (int) $request->query('page', '1');
             $perPage = (int) $request->query('per_page', '15');
-            $categories = $this->useCase->execute($page, $perPage);
+            $categories = $this->useCase->execute($lang, $page, $perPage);
             
             return response()->json([
                 'data' => $categories['items'],

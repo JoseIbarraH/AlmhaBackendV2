@@ -8,15 +8,17 @@ final class ProcedureCategory implements \JsonSerializable
 {
     private ?int $id;
     private string $code;
+    private ?string $name;
 
     /** @var ProcedureCategoryTranslation[] */
     private array $translations;
 
-    public function __construct(string $code, array $translations = [], ?int $id = null)
+    public function __construct(string $code, array $translations = [], ?int $id = null, ?string $name = null)
     {
         $this->id = $id;
         $this->code = $code;
         $this->translations = $translations;
+        $this->name = $name;
     }
 
     public function id(): ?int { return $this->id; }
@@ -35,6 +37,7 @@ final class ProcedureCategory implements \JsonSerializable
         return [
             'id' => $this->id,
             'code' => $this->code,
+            'name' => $this->name ?? (count($this->translations) > 0 ? $this->translations[0]->title() : null),
             'translations' => $this->translations
         ];
     }

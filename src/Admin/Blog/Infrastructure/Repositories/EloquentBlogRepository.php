@@ -160,9 +160,7 @@ final class EloquentBlogRepository implements BlogRepositoryContract
 
     public function getAllByLang(string $lang, int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array
     {
-        $paginator = $this->model->with(['translations' => function ($query) use ($lang) {
-            $query->where('lang', $lang);
-        }])
+        $paginator = $this->model->with('translations')
             ->when($status, function ($query, $status) {
                 $query->where('status', $status);
             })
@@ -177,8 +175,8 @@ final class EloquentBlogRepository implements BlogRepositoryContract
             })
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $items = collect($paginator->items())->map(function ($eloquentBlog) {
-            return $this->toDomainEntity($eloquentBlog);
+        $items = collect($paginator->items())->map(function ($eloquentBlog) use ($lang) {
+            return $this->toDomainEntity($eloquentBlog, $lang);
         })->toArray();
 
         return [
@@ -190,7 +188,7 @@ final class EloquentBlogRepository implements BlogRepositoryContract
     /**
      * Convierte un modelo Eloquent a entidad de dominio
      */
-    private function toDomainEntity($eloquentBlog): Blog
+    private function toDomainEntity($eloquentBlog, ?string $lang = null): Blog
     {
         $translations = $eloquentBlog->translations->map(function ($t) {
             return new BlogTranslation(
@@ -202,6 +200,12 @@ final class EloquentBlogRepository implements BlogRepositoryContract
             );
         })->toArray();
 
+        $localizedTitle = null;
+        if ($lang) {
+            $found = $eloquentBlog->translations->where('lang', $lang)->first();
+            $localizedTitle = $found ? $found->title : ($eloquentBlog->translations->first()?->title ?? null);
+        }
+
         return new Blog(
             $eloquentBlog->category_code,
             $eloquentBlog->status,
@@ -212,7 +216,8 @@ final class EloquentBlogRepository implements BlogRepositoryContract
             $eloquentBlog->published_at,
             $eloquentBlog->notification_sent_at,
             $translations,
-            $eloquentBlog->id
+            $eloquentBlog->id,
+            $localizedTitle
         );
     }
 }

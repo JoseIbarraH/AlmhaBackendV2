@@ -15,6 +15,7 @@ final class Procedure implements \JsonSerializable
     private string $categoryCode;
     private string $status;
     private int $views;
+    private ?string $title;
 
     /** @var ProcedureTranslation[] */
     private array $translations;
@@ -50,7 +51,8 @@ final class Procedure implements \JsonSerializable
         array $postoperativeInstructions = [],
         array $preparationSteps = [],
         array $recoveryPhases = [],
-        array $gallery = []
+        array $gallery = [],
+        ?string $title = null
     ) {
         if (!in_array($status, ['draft', 'published', 'archived'])) {
             throw new RuntimeException("Invalid procedure status: $status");
@@ -69,6 +71,7 @@ final class Procedure implements \JsonSerializable
         $this->preparationSteps = $preparationSteps;
         $this->recoveryPhases = $recoveryPhases;
         $this->gallery = $gallery;
+        $this->title = $title;
     }
 
     public function id(): ?int { return $this->id; }
@@ -130,9 +133,10 @@ final class Procedure implements \JsonSerializable
             'id' => $this->id,
             'userId' => $this->userId,
             'image' => $this->image,
-            'categoryId' => $this->categoryCode,
+            'categoryCode' => $this->categoryCode,
             'status' => $this->status,
             'views' => $this->views,
+            'title' => $this->title ?? (count($this->translations) > 0 ? $this->translations[0]->title() : null),
             'translations' => $this->translations,
             'sections' => $this->sections,
             'faqs' => $this->faqs,

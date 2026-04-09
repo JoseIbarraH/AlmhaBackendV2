@@ -15,6 +15,7 @@ interface BlogCategoryRepositoryContract
     public function findByCode(string $code): ?BlogCategory;
 
     public function getAll(int $page = 1, int $perPage = 15): array;
+    public function getAllByLang(string $lang, int $page = 1, int $perPage = 15): array;
 
     public function update(BlogCategory $category): void;
 

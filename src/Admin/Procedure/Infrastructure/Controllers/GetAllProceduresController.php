@@ -55,7 +55,7 @@ final class GetAllProceduresController
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $lang = $request->query('lang', 'es');
+        $lang = $request->header('Accept-Language', 'es');
         try {
             $page = (int) $request->query('page', '1');
             $perPage = (int) $request->query('per_page', '15');

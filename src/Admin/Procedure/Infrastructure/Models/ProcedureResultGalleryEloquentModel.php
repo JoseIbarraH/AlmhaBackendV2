@@ -16,6 +16,12 @@ class ProcedureResultGalleryEloquentModel extends Model
         'order'
     ];
 
+    protected $casts = [
+        'pair_id' => 'integer',
+        'order' => 'integer',
+        'procedure_id' => 'integer',
+    ];
+
     public function procedure()
     {
         return $this->belongsTo(ProcedureEloquentModel::class, 'procedure_id');

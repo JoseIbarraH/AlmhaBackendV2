@@ -51,8 +51,7 @@ final class CreateProcedureController
                                 properties: [
                                     new OA\Property(property: "type", type: "string"),
                                     new OA\Property(property: "title", type: "string"),
-                                    new OA\Property(property: "contentOne", type: "string"),
-                                    new OA\Property(property: "order", type: "integer")
+                                    new OA\Property(property: "contentOne", type: "string")
                                 ]
                             )
                         ),
@@ -113,39 +112,38 @@ final class CreateProcedureController
             'sections.*.title' => 'nullable|string',
             'sections.*.contentOne' => 'nullable|string',
             'sections.*.contentTwo' => 'nullable|string',
-            'sections.*.order' => 'integer',
 
             // FAQs
             'faqs' => 'nullable|array',
             'faqs.*.question' => 'required|string',
             'faqs.*.answer' => 'required|string',
-            'faqs.*.order' => 'integer',
+            'faqs.*.order' => 'numeric',
 
             // Instructions
             'postoperativeInstructions' => 'nullable|array',
             'postoperativeInstructions.*.type' => 'required|string',
             'postoperativeInstructions.*.content' => 'required|string',
-            'postoperativeInstructions.*.order' => 'integer',
+            'postoperativeInstructions.*.order' => 'numeric',
 
             // Preparation Steps
             'preparationSteps' => 'nullable|array',
             'preparationSteps.*.title' => 'required|string',
             'preparationSteps.*.description' => 'nullable|string',
-            'preparationSteps.*.order' => 'integer',
+            'preparationSteps.*.order' => 'numeric',
 
             // Recovery Phases
             'recoveryPhases' => 'nullable|array',
             'recoveryPhases.*.period' => 'nullable|string',
             'recoveryPhases.*.title' => 'required|string',
             'recoveryPhases.*.description' => 'nullable|string',
-            'recoveryPhases.*.order' => 'integer',
+            'recoveryPhases.*.order' => 'numeric',
 
             // Gallery (Paths only for now, actual upload handled separately or as placeholder)
             'gallery' => 'nullable|array',
             'gallery.*.path' => 'required|nullable|file|image|max:5120',
             'gallery.*.type' => 'required|string',
-            'gallery.*.pairId' => 'nullable|integer',
-            'gallery.*.order' => 'integer',
+            'gallery.*.pairId' => 'nullable|numeric',
+            'gallery.*.order' => 'numeric',
         ]);
 
         $baseLang = $request->input('baseLang');
