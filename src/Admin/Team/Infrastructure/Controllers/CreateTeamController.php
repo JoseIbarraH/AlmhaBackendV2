@@ -75,7 +75,7 @@ final class CreateTeamController
             'biography' => 'nullable|string',
             'gallery' => 'nullable|array',
             'gallery.*.path' => 'required|file|image|max:5120',
-            'gallery.*.order' => 'integer',
+            'gallery.*.order' => 'numeric',
         ]);
 
         $baseLang = $request->input('baseLang');

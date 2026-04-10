@@ -99,7 +99,7 @@ final class UpdateProcedureController
             'subtitle' => 'nullable|string',
             'status' => 'required|string|in:draft,published,archived',
             'userId' => 'nullable|string|exists:users,id',
-            'image' => 'nullable|file|image|max:5120',
+            'image' => 'nullable', // Puede ser un archivo nuevo o un string de la ruta existente
 
             // Sections
             'sections' => 'nullable|array',
@@ -135,7 +135,7 @@ final class UpdateProcedureController
 
             // Gallery
             'gallery' => 'nullable|array',
-            'gallery.*.path' => 'required|nullable|file|image|max:5120',
+            'gallery.*.path' => 'nullable', // Puede ser un string (imagen existente) o un File (nueva imagen)
             'gallery.*.type' => 'required|string',
             'gallery.*.pairId' => 'nullable|numeric',
             'gallery.*.order' => 'numeric',
@@ -146,7 +146,7 @@ final class UpdateProcedureController
         $targetLanguages = array_values(array_diff($configuredTargets, [$baseLang]));
 
         try {
-            $imageUrl = null;
+            $imageUrl = $request->input('image');
             if ($request->hasFile('image')) {
                 $imageUrl = $this->storeImage($request->file('image'), "procedures/{$id}/main_image", true);
             }
@@ -154,6 +154,8 @@ final class UpdateProcedureController
             // --- Handle Gallery Files ---
             $galleryData = $request->input('gallery', []);
             $galleryFiles = $request->file('gallery', []);
+            
+            $filteredGalleryData = [];
 
             foreach ($galleryData as $index => &$item) {
                 // Si viene un archivo nuevo, lo subimos
@@ -163,7 +165,11 @@ final class UpdateProcedureController
                         "procedures/{$id}/gallery"
                     );
                 }
-                // Si no viene archivo pero viene el path (como string), se mantiene el existente
+                
+                // Validar que efectivamente tenga un path, omitir vacíos
+                if (!empty($item['path'])) {
+                    $filteredGalleryData[] = $item;
+                }
             }
 
             $this->useCase->execute(
@@ -181,7 +187,7 @@ final class UpdateProcedureController
                 $request->input('postoperativeInstructions', []),
                 $request->input('preparationSteps', []),
                 $request->input('recoveryPhases', []),
-                $galleryData
+                $filteredGalleryData
             );
 
             return response()->json([
@@ -189,7 +195,7 @@ final class UpdateProcedureController
             ], 200);
         } catch (Exception $e) {
             return response()->json([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage() . ' in ' . basename($e->getFile()) . ':' . $e->getLine()
             ], 400);
         }
     }

@@ -49,7 +49,7 @@ final class CreateTeamUseCase {
             $imageTranslations[] = new TeamImageTranslation($baseLang, null); // Por ahora sin descripción
             $teamImages[] = new TeamImage(
                 $imageData['path'],
-                $imageData['order'] ?? 0,
+                (int) ($imageData['order'] ?? 0),
                 $imageTranslations
             );
         }

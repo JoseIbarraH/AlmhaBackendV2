@@ -86,13 +86,13 @@ final class UpdateTeamController
             'name' => 'required|string|max:255',
             'status' => 'required|string|in:active,inactive',
             'userId' => 'nullable|string|exists:users,id',
-            'image' => 'nullable|file|image|max:5120',
+            'image' => 'nullable', // Puede ser un archivo nuevo o un string de la ruta existente
             'specialization' => 'nullable|string',
             'description' => 'nullable|string',
             'biography' => 'nullable|string',
             'gallery' => 'nullable|array',
-            'gallery.*.path' => 'nullable|file|image|max:5120',
-            'gallery.*.order' => 'integer',
+            'gallery.*.path' => 'nullable', // Puede ser un string (imagen existente) o un File (nueva imagen)
+            'gallery.*.order' => 'numeric',
         ]);
 
         $baseLang = $request->input('baseLang');
