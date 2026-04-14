@@ -4,23 +4,34 @@ namespace Src\Admin\Design\Application;
 
 use Illuminate\Support\Facades\Storage;
 use Src\Admin\Design\Domain\DesignRepositoryContract;
+use Src\Admin\Design\Domain\DesignTranslation;
+use Src\Shared\Domain\Contracts\TranslatorServiceContract;
 
 class SaveDesignItemUseCase
 {
     private DesignRepositoryContract $repository;
+    private TranslatorServiceContract $translator;
 
-    public function __construct(DesignRepositoryContract $repository)
+    public function __construct(DesignRepositoryContract $repository, TranslatorServiceContract $translator)
     {
         $this->repository = $repository;
+        $this->translator = $translator;
     }
 
-    public function execute(array $data)
+    public function execute(
+        array $data,
+        string $baseLang,
+        array $targetLanguages = []
+    )
     {
+        \Log::info("Datos: ", $data);
+        \Log::info("Idioma base: ". $baseLang);
+
         $path = null;
         if (isset($data['media_file'])) {
-            $path = $data['media_file']->store('designs', 'public');
+            $path = $data['media_file']->store('designs', 's3');
             $data['media_path'] = $path;
-            
+
             // Auto detect media type if not provided explicitly
             if (!isset($data['media_type'])) {
                 $mimeType = $data['media_file']->getMimeType();
@@ -28,7 +39,62 @@ class SaveDesignItemUseCase
             }
         }
 
-        $item = $this->repository->saveItem($data);
+        if (!isset($data['media_type'])) {
+            $data['media_type'] = 'image';
+        }
+
+        // --- Handle Translations ---
+        $title = $data['title'] ?? null;
+        $subtitle = $data['subtitle'] ?? null;
+        $translationsData = $data['translations'] ?? [];
+
+        // If translations array is provided, try to find the one matching baseLang
+        if (!empty($translationsData) && is_array($translationsData)) {
+            $baseTranslation = null;
+            foreach ($translationsData as $t) {
+                if (($t['lang'] ?? '') === $baseLang) {
+                    $baseTranslation = $t;
+                    break;
+                }
+            }
+            
+            // Fallback to first one if not found specifically for baseLang
+            if (!$baseTranslation) {
+                $baseTranslation = $translationsData[0];
+            }
+
+            $title = $baseTranslation['title'] ?? $title;
+            $subtitle = $baseTranslation['subtitle'] ?? $subtitle;
+        }
+
+        // Only proceed if we have at least a title (to avoid overwriting with empty)
+        // or if we explicitly want to save translations
+        if ($title !== null || $subtitle !== null || !empty($translationsData)) {
+            $translations = [];
+            
+            // Original translation
+            $translations[] = [
+                'lang' => $baseLang,
+                'title' => $title,
+                'subtitle' => $subtitle
+            ];
+
+            // Auto-translate to target languages
+            foreach ($targetLanguages as $lang) {
+                $translatedTitle = $title ? $this->translator->translate($title, $lang, $baseLang) : null;
+                $translatedSubtitle = $subtitle ? $this->translator->translate($subtitle, $lang, $baseLang) : null;
+                
+                $translations[] = [
+                    'lang' => $lang,
+                    'title' => $translatedTitle,
+                    'subtitle' => $translatedSubtitle
+                ];
+            }
+
+            $data['translations'] = $translations;
+        }
+
+        $item = $this->repository->saveItem($data, $baseLang);
         return $item->toArray();
     }
 }

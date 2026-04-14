@@ -4,7 +4,7 @@ namespace Src\Admin\Design\Application;
 
 use Src\Admin\Design\Domain\DesignRepositoryContract;
 
-class GetDesignsUseCase
+class UpdateDesignStatusUseCase
 {
     private DesignRepositoryContract $repository;
 
@@ -13,10 +13,8 @@ class GetDesignsUseCase
         $this->repository = $repository;
     }
 
-    public function execute(?string $lang = null): array
+    public function execute(int $designId, string $status): void
     {
-        $designs = $this->repository->findAll($lang);
-        
-        return array_map(fn($design) => $design->toArray(), $designs);
+        $this->repository->updateDesignStatus($designId, $status);
     }
 }

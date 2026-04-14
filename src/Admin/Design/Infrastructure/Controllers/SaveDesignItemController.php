@@ -22,6 +22,7 @@ class SaveDesignItemController
             'media_file' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,mp4,webm,ogg',
             'order' => 'nullable|integer',
             'translations' => 'nullable|string', // JSON string for translations
+            'baseLang' => 'nullable|string|max:5',
         ]);
 
         $data = $request->only(['design_id', 'order']);
@@ -31,10 +32,15 @@ class SaveDesignItemController
         }
 
         if ($request->has('translations')) {
-            $data['translations'] = json_decode($request->input('translations'), true);
+            $decoded = json_decode($request->input('translations'), true);
+            $data['translations'] = is_array($decoded) ? $decoded : null;
         }
 
-        $item = $this->useCase->execute($data);
+        $baseLang = $request->input('baseLang', substr($request->header('Accept-Language', 'es'), 0, 2));
+        $configuredTargets = config('services.google_translate.targets', ['es', 'en']);
+        $targetLanguages = array_values(array_diff($configuredTargets, [$baseLang]));
+
+        $item = $this->useCase->execute($data, $baseLang, $targetLanguages);
 
         return response()->json([
             'success' => true,

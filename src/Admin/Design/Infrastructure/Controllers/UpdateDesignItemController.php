@@ -21,6 +21,7 @@ class UpdateDesignItemController
             'media_file' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,mp4,webm,ogg',
             'order' => 'nullable|integer',
             'translations' => 'nullable|string', // JSON string for translations
+            'baseLang' => 'nullable|string|max:5',
         ]);
 
         $data = $request->only(['order']);
@@ -33,8 +34,12 @@ class UpdateDesignItemController
             $data['translations'] = json_decode($request->input('translations'), true);
         }
 
+        $baseLang = $request->input('baseLang', substr($request->header('Accept-Language', 'es'), 0, 2));
+        $configuredTargets = config('services.google_translate.targets', ['es', 'en']);
+        $targetLanguages = array_values(array_diff($configuredTargets, [$baseLang]));
+
         try {
-            $item = $this->useCase->execute($itemId, $data);
+            $item = $this->useCase->execute($itemId, $data, $baseLang, $targetLanguages);
             
             return response()->json([
                 'success' => true,

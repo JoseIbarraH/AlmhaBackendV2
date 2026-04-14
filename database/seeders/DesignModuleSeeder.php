@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DesignModuleSeeder extends Seeder
 {
@@ -12,7 +13,27 @@ class DesignModuleSeeder extends Seeder
      */
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
+        DB::table('design_item_translations')->truncate();
+        DB::table('design_items')->truncate();
+        DB::table('designs')->truncate();
+        Schema::enableForeignKeyConstraints();
+
         $designs = [
+            [
+                'key' => 'main_banner',
+                'display_mode' => 'carousel',
+                'status' => 'active',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'key' => 'alternate_main_banner',
+                'display_mode' => 'single_image',
+                'status' => 'inactive',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
             [
                 'key' => 'background_1',
                 'display_mode' => 'single_image',
@@ -35,15 +56,8 @@ class DesignModuleSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'key' => 'hero_section',
+                'key' => 'brands_carousel',
                 'display_mode' => 'carousel',
-                'status' => 'active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'key' => 'interleaved_1',
-                'display_mode' => 'single_image',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -53,8 +67,7 @@ class DesignModuleSeeder extends Seeder
         foreach ($designs as $designData) {
             $designId = DB::table('designs')->insertGetId($designData);
 
-            // Insert 1 empty design_item for each by default, so they can just update it
-            // Only insert multiple for the carousel if we wanted to mock it, but 1 is fine to start with.
+            // Insert 1 empty design_item for each by default
             $itemId = DB::table('design_items')->insertGetId([
                 'design_id' => $designId,
                 'media_type' => 'image',
