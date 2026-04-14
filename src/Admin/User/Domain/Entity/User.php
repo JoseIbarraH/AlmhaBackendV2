@@ -9,6 +9,7 @@ use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
 use Src\Admin\User\Domain\ValueObjects\UserStatus;
 use Src\Admin\User\Domain\ValueObjects\UserId;
+use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
 
 final class User
 {
@@ -19,6 +20,7 @@ final class User
     private $password;
     private $rememberToken;
     private $status;
+    private $isMainAdmin;
     private $roles;
 
 
@@ -29,6 +31,7 @@ final class User
         UserPassword $password,
         UserRememberToken $rememberToken,
         UserStatus $status,
+        UserMainAdmin $isMainAdmin,
         array $roles = [],
         ?UserId $id = null
     )
@@ -39,6 +42,7 @@ final class User
         $this->password = $password;
         $this->rememberToken = $rememberToken;
         $this->status = $status;
+        $this->isMainAdmin = $isMainAdmin;
         $this->roles = $roles;
         $this->id = $id;
     }
@@ -78,6 +82,11 @@ final class User
         return $this->status;
     }
 
+    public function isMainAdmin(): UserMainAdmin
+    {
+        return $this->isMainAdmin;
+    }
+
     public function roles(): array
     {
         return $this->roles;
@@ -90,11 +99,12 @@ final class User
         UserPassword $password,
         UserRememberToken $rememberToken,
         UserStatus $status,
+        UserMainAdmin $isMainAdmin,
         array $roles = [],
         ?UserId $id = null
     ): User
     {
-        $user = new self($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $roles, $id);
+        $user = new self($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $isMainAdmin, $roles, $id);
 
         return $user;
     }

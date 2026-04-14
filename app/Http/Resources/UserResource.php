@@ -27,6 +27,7 @@ class UserResource extends JsonResource
             'name' => $user->name()->value(),
             'email' => $user->email()->value(),
             'email_verified_date' => $user->emailVerifiedDate()->value(),
+            'is_main_admin' => (bool)$user->isMainAdmin()->value(),
             'roles' => $user->roles(),
         ];
     }

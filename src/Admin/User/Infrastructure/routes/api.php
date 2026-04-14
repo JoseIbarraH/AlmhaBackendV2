@@ -8,8 +8,12 @@ use Src\Admin\User\Infrastructure\Controllers\GetUserByCriteriaController;
 use Src\Admin\User\Infrastructure\Controllers\UpdateUserController;
 use Src\Admin\User\Infrastructure\Controllers\DeleteUserController;
 use Src\Admin\User\Infrastructure\Controllers\GetAuthenticatedUserController;
+use Src\Admin\User\Infrastructure\Controllers\UpdateProfileController;
+use Src\Admin\User\Infrastructure\Controllers\DeleteAccountController;
 
 Route::get('/user', GetAuthenticatedUserController::class)->middleware('auth:api');
+Route::post('/profile/update', UpdateProfileController::class)->middleware('auth:api');
+Route::delete('/profile', DeleteAccountController::class)->middleware('auth:api');
 
 Route::prefix('users')
     ->middleware(['auth:api'])

@@ -14,6 +14,7 @@ use Src\Admin\User\Domain\ValueObjects\UserName;
 use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
 use Src\Admin\User\Domain\ValueObjects\UserStatus;
+use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
 
 final class EloquentUserRepository implements UserRepositoryContract
 {
@@ -33,6 +34,7 @@ final class EloquentUserRepository implements UserRepositoryContract
             'password' => $user->password()->value(),
             'remember_token' => $user->rememberToken()->value(),
             'is_active' => $user->status()->value(),
+            'is_main_admin' => $user->isMainAdmin()->value(),
         ];
 
         $newUserModel = $this->eloquentUserModel->create($data);
@@ -71,6 +73,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 new UserPassword($user->password),
                 new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
                 new UserStatus((bool)$user->is_active),
+                new UserMainAdmin((bool)$user->is_main_admin),
                 $user->getRoleNames()->toArray(),
                 new UserId((string)$user->id)
             );
@@ -91,6 +94,7 @@ final class EloquentUserRepository implements UserRepositoryContract
             new UserPassword($user->password),
             new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
             new UserStatus((bool)$user->is_active),
+            new UserMainAdmin((bool)$user->is_main_admin),
             $user->getRoleNames()->toArray(),
             new UserId((string)$user->id)
         );
@@ -110,6 +114,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'email' => $user->email()->value(),
                 'password' => $user->password()->value(),
                 'is_active' => $user->status()->value(),
+                'is_main_admin' => $user->isMainAdmin()->value(),
             ]);
 
             $eloquentUser->syncRoles($user->roles());

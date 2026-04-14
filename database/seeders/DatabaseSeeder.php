@@ -19,7 +19,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RolesAndPermissionsSeeder::class,
-            BlogTestSeeder::class
+            BlogTestSeeder::class,
+            DesignModuleSeeder::class
         ]);
     }
 }
