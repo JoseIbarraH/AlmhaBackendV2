@@ -21,16 +21,21 @@ final class UpdateBlogUseCase
         $this->translator = $translator;
     }
 
+    /**
+     * Patch-style update: only non-null params are updated.
+     * Null means "not sent / keep existing value".
+     */
     public function execute(
         int $id,
-        string $categoryCode,
         string $baseLang,
-        string $title,
-        ?string $content,
+        ?string $categoryCode = null,
+        ?string $title = null,
+        ?string $content = null,
         array $targetLanguages = [],
         ?int $userId = null,
         ?string $image = null,
-        ?string $writer = null
+        ?string $writer = null,
+        bool $contentWasSent = false
     ): void
     {
         $blog = $this->repository->findById($id);
@@ -39,22 +44,46 @@ final class UpdateBlogUseCase
             throw new RuntimeException("Blog no encontrado con el ID: $id");
         }
 
-        $translations = [];
-        $translations[] = new BlogTranslation($baseLang, $title, $content);
+        // Resolve values: use sent value or fallback to existing
+        $finalCategoryCode = $categoryCode ?? $blog->categoryCode();
+        $finalUserId = $userId ?? $blog->userId();
+        $finalWriter = $writer ?? $blog->writer();
 
-        foreach ($targetLanguages as $lang) {
-            $translatedTitle = $this->translator->translate($title, $lang, $baseLang);
-            $translatedContent = $content ? $this->translator->translate($content, $lang, $baseLang) : null;
-            
-            $translations[] = new BlogTranslation($lang, $translatedTitle, $translatedContent);
+        // Determine if translatable content changed
+        $titleChanged = $title !== null;
+        $contentChanged = $contentWasSent;
+
+        // Find existing baseLang translation (or first available)
+        $existingTranslation = $blog->getTranslation($baseLang);
+        if (!$existingTranslation && count($blog->translations()) > 0) {
+            $existingTranslation = $blog->translations()[0];
+        }
+
+        $finalTitle = $title ?? ($existingTranslation ? $existingTranslation->title() : '');
+        $finalContent = $contentChanged ? $content : ($existingTranslation ? $existingTranslation->content() : null);
+
+        // Only re-translate if text content actually changed
+        if ($titleChanged || $contentChanged) {
+            $translations = [];
+            $translations[] = new BlogTranslation($baseLang, $finalTitle, $finalContent);
+
+            foreach ($targetLanguages as $lang) {
+                $translatedTitle = $this->translator->translate($finalTitle, $lang, $baseLang);
+                $translatedContent = $finalContent ? $this->translator->translate($finalContent, $lang, $baseLang) : null;
+
+                $translations[] = new BlogTranslation($lang, $translatedTitle, $translatedContent);
+            }
+        } else {
+            // No text changed — preserve existing translations
+            $translations = $blog->translations();
         }
 
         $blogToUpdate = new Blog(
-            $categoryCode,
+            $finalCategoryCode,
             $blog->status(),
-            $userId ?? $blog->userId(),
+            $finalUserId,
             $image ?? $blog->image(),
-            $writer ?? $blog->writer(),
+            $finalWriter,
             $blog->views(),
             $blog->publishedAt(),
             $blog->notificationSentAt(),

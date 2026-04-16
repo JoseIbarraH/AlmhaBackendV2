@@ -375,6 +375,14 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
             return new ProcedureTranslation($t->id, $t->lang, $t->slug, $t->title, $t->subtitle);
         })->toArray();
 
+        if ($lang) {
+            usort($translations, function($a, $b) use ($lang) {
+                if ($a->lang() === $lang) return -1;
+                if ($b->lang() === $lang) return 1;
+                return 0;
+            });
+        }
+
         $localizedTitle = null;
         if ($lang) {
             $translationModel = $eloquentProcedure->translations->firstWhere('lang', $lang)

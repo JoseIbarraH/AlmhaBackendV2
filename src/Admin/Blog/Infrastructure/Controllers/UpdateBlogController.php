@@ -28,7 +28,7 @@ final class UpdateBlogController
 
     #[OA\Post(
         path: "/blogs/{id}",
-        summary: "Actualizar una entrada de blog",
+        summary: "Actualizar una entrada de blog (patch-style: solo campos enviados se actualizan)",
         tags: ["Blog"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -45,10 +45,10 @@ final class UpdateBlogController
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                    required: ["categoryCode", "baseLang", "title"],
+                    required: ["baseLang"],
                     properties: [
-                        new OA\Property(property: "categoryCode", type: "string", example: "NOTICIAS"),
                         new OA\Property(property: "baseLang", type: "string", example: "es"),
+                        new OA\Property(property: "categoryCode", type: "string", example: "NOTICIAS"),
                         new OA\Property(property: "title", type: "string"),
                         new OA\Property(property: "content", type: "string"),
                         new OA\Property(property: "userId", type: "integer"),
@@ -71,12 +71,12 @@ final class UpdateBlogController
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'categoryCode' => 'required|string|exists:blog_categories,code',
             'baseLang' => 'required|string|max:5',
-            'title' => 'required|string|max:255',
+            'categoryCode' => 'nullable|string|exists:blog_categories,code',
+            'title' => 'nullable|string|max:255',
             'content' => 'nullable|string',
             'userId' => 'nullable|integer|exists:users,id',
-            'image' => 'nullable|file|image|max:5120', // max 5MB
+            'image' => 'nullable|file|image|max:5120',
             'writer' => 'nullable|string|max:100'
         ]);
 
@@ -87,14 +87,15 @@ final class UpdateBlogController
         try {
             $this->useCase->execute(
                 $id,
-                $request->input('categoryCode'),
                 $baseLang,
-                $request->input('title'),
-                $request->input('content'),
+                $request->has('categoryCode') ? $request->input('categoryCode') : null,
+                $request->has('title') ? $request->input('title') : null,
+                $request->has('content') ? $request->input('content') : null,
                 $targetLanguages,
-                $request->input('userId') ? (int) $request->input('userId') : null,
+                $request->has('userId') ? (int) $request->input('userId') : null,
                 null, // image se maneja aparte
-                $request->input('writer')
+                $request->has('writer') ? $request->input('writer') : null,
+                $request->has('content') // contentWasSent flag
             );
 
             // Subir nueva imagen a MinIO si se envió

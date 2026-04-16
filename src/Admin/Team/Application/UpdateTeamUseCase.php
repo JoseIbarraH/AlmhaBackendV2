@@ -10,6 +10,7 @@ use Src\Admin\Team\Domain\Entity\TeamTranslation;
 use Src\Admin\Team\Domain\Entity\TeamImage;
 use Src\Admin\Team\Domain\Entity\TeamImageTranslation;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
+use RuntimeException;
 
 final class UpdateTeamUseCase {
     private TeamRepositoryContract $repository;
@@ -20,47 +21,86 @@ final class UpdateTeamUseCase {
         $this->translator = $trans;
     }
 
+    /**
+     * Patch-style update: null params mean "keep existing value".
+     */
     public function execute(
         int $id,
+        string $baseLang,
+        ?string $name = null,
+        ?string $status = null,
         ?string $userId = null,
         ?string $slug = null,
-        string $baseLang,
-        string $name,
-        string $status,
         ?string $image = null,
         ?string $specialization = null,
         ?string $description = null,
         ?string $biography = null,
         array $targetLanguages = [],
-        array $images = []
+        ?array $images = null,
+        bool $specializationWasSent = false,
+        bool $descriptionWasSent = false,
+        bool $biographyWasSent = false
     ): void {
-        $translations = [];
-        $translations[] = new TeamTranslation($baseLang, $specialization, $description, $biography);
+        $existingTeam = $this->repository->findById($id);
 
-        foreach ($targetLanguages as $lang) {
-            $tSpecialization = $specialization ? $this->translator->translate($specialization, $lang, $baseLang) : null;
-            $tDescription = $description ? $this->translator->translate($description, $lang, $baseLang) : null;
-            $tBiography = $biography ? $this->translator->translate($biography, $lang, $baseLang) : null;
-            $translations[] = new TeamTranslation($lang, $tSpecialization, $tDescription, $tBiography);
+        if (!$existingTeam) {
+            throw new RuntimeException("Team member not found with ID: $id");
         }
 
-        $teamImages = [];
-        foreach ($images as $imageData) {
-            $imageTranslations = [];
-            $imageTranslations[] = new TeamImageTranslation($baseLang, null); // Por ahora sin descripción
-            $teamImages[] = new TeamImage(
-                $imageData['path'],
-                (int) ($imageData['order'] ?? 0),
-                $imageTranslations
-            );
+        // Resolve scalar values
+        $finalName = $name ?? $existingTeam->name();
+        $finalStatus = $status ?? $existingTeam->status();
+        $finalUserId = $userId ?? $existingTeam->userId();
+
+        // Find existing baseLang translation
+        $existingTranslation = $existingTeam->getTranslation($baseLang);
+        if (!$existingTranslation && count($existingTeam->translations()) > 0) {
+            $existingTranslation = $existingTeam->translations()[0];
+        }
+
+        // Determine if translatable content changed
+        $textChanged = $specializationWasSent || $descriptionWasSent || $biographyWasSent;
+
+        $finalSpecialization = $specializationWasSent ? $specialization : ($existingTranslation ? $existingTranslation->specialization() : null);
+        $finalDescription = $descriptionWasSent ? $description : ($existingTranslation ? $existingTranslation->description() : null);
+        $finalBiography = $biographyWasSent ? $biography : ($existingTranslation ? $existingTranslation->biography() : null);
+
+        if ($textChanged) {
+            $translations = [];
+            $translations[] = new TeamTranslation($baseLang, $finalSpecialization, $finalDescription, $finalBiography);
+
+            foreach ($targetLanguages as $lang) {
+                $tSpecialization = $finalSpecialization ? $this->translator->translate($finalSpecialization, $lang, $baseLang) : null;
+                $tDescription = $finalDescription ? $this->translator->translate($finalDescription, $lang, $baseLang) : null;
+                $tBiography = $finalBiography ? $this->translator->translate($finalBiography, $lang, $baseLang) : null;
+                $translations[] = new TeamTranslation($lang, $tSpecialization, $tDescription, $tBiography);
+            }
+        } else {
+            $translations = $existingTeam->translations();
+        }
+
+        // Gallery: null means keep existing
+        if ($images !== null) {
+            $teamImages = [];
+            foreach ($images as $imageData) {
+                $imageTranslations = [];
+                $imageTranslations[] = new TeamImageTranslation($baseLang, null);
+                $teamImages[] = new TeamImage(
+                    $imageData['path'],
+                    (int) ($imageData['order'] ?? 0),
+                    $imageTranslations
+                );
+            }
+        } else {
+            $teamImages = $existingTeam->images();
         }
 
         $team = new Team(
-            $slug,
-            $name,
-            $status,
-            $userId,
-            $image,
+            $slug ?? $existingTeam->slug(),
+            $finalName,
+            $finalStatus,
+            $finalUserId,
+            $image ?? $existingTeam->image(),
             $translations,
             $teamImages,
             $id

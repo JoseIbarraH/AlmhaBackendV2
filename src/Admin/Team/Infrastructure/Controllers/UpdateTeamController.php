@@ -28,7 +28,7 @@ final class UpdateTeamController
 
     #[OA\Post(
         path: "/teams/{id}",
-        summary: "Actualizar un miembro del equipo",
+        summary: "Actualizar un miembro del equipo (patch-style)",
         tags: ["Team"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -45,7 +45,7 @@ final class UpdateTeamController
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                    required: ["baseLang", "name", "status"],
+                    required: ["baseLang"],
                     properties: [
                         new OA\Property(property: "baseLang", type: "string", example: "es"),
                         new OA\Property(property: "name", type: "string"),
@@ -83,15 +83,15 @@ final class UpdateTeamController
     {
         $request->validate([
             'baseLang' => 'required|string|max:5',
-            'name' => 'required|string|max:255',
-            'status' => 'required|string|in:active,inactive',
+            'name' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:active,inactive',
             'userId' => 'nullable|string|exists:users,id',
-            'image' => 'nullable', // Puede ser un archivo nuevo o un string de la ruta existente
+            'image' => 'nullable',
             'specialization' => 'nullable|string',
             'description' => 'nullable|string',
             'biography' => 'nullable|string',
             'gallery' => 'nullable|array',
-            'gallery.*.path' => 'nullable', // Puede ser un string (imagen existente) o un File (nueva imagen)
+            'gallery.*.path' => 'nullable',
             'gallery.*.order' => 'numeric',
         ]);
 
@@ -100,46 +100,46 @@ final class UpdateTeamController
         $targetLanguages = array_values(array_diff($configuredTargets, [$baseLang]));
 
         try {
-            // Check if team member exists
-            $currentTeam = $this->repository->findById($id);
-            if (!$currentTeam) {
-                return response()->json(['error' => 'Team member not found'], 404);
-            }
-
             // Handle main image update
-            $mainImagePath = $currentTeam->image();
+            $mainImagePath = null;
             if ($request->hasFile('image')) {
                 $mainImagePath = $this->storeImage($request->file('image'), "teams/{$id}/avatar");
             }
 
-            // --- Handle Gallery Files ---
-            $galleryData = [];
-            foreach ($request->input('gallery', []) as $index => $item) {
-                $path = $item['path'] ?? null;
-                if ($request->hasFile("gallery.{$index}.path")) {
-                    $path = $this->storeImage($request->file("gallery.{$index}.path"), "teams/{$id}/gallery");
-                }
-                if ($path) {
-                    $galleryData[] = [
-                        'path' => $path,
-                        'order' => $item['order'] ?? 0
-                    ];
+            // --- Handle Gallery Files (only if gallery was sent) ---
+            $galleryData = null;
+            if ($request->has('gallery')) {
+                $galleryData = [];
+                foreach ($request->input('gallery', []) as $index => $item) {
+                    $path = $item['path'] ?? null;
+                    if ($request->hasFile("gallery.{$index}.path")) {
+                        $path = $this->storeImage($request->file("gallery.{$index}.path"), "teams/{$id}/gallery");
+                    }
+                    if ($path) {
+                        $galleryData[] = [
+                            'path' => $path,
+                            'order' => $item['order'] ?? 0
+                        ];
+                    }
                 }
             }
 
             $this->useCase->execute(
                 $id,
-                $request->input('userId'),
-                null, // slug (keep existing or let system regenerate if logic allows)
                 $baseLang,
-                $request->input('name'),
-                $request->input('status'),
+                $request->has('name') ? $request->input('name') : null,
+                $request->has('status') ? $request->input('status') : null,
+                $request->has('userId') ? $request->input('userId') : null,
+                null, // slug
                 $mainImagePath,
-                $request->input('specialization'),
-                $request->input('description'),
-                $request->input('biography'),
+                $request->has('specialization') ? $request->input('specialization') : null,
+                $request->has('description') ? $request->input('description') : null,
+                $request->has('biography') ? $request->input('biography') : null,
                 $targetLanguages,
-                $galleryData
+                $galleryData,
+                $request->has('specialization'),
+                $request->has('description'),
+                $request->has('biography')
             );
 
             return response()->json([

@@ -32,22 +32,28 @@ final class UpdateProcedureUseCase
         $this->translator = $translator;
     }
 
+    /**
+     * Patch-style update: null params mean "keep existing value".
+     * Arrays passed as null mean "keep existing children".
+     */
     public function execute(
         int $id,
-        string $categoryCode,
         string $baseLang,
-        string $title,
-        ?string $subtitle,
+        ?string $categoryCode = null,
+        ?string $title = null,
+        ?string $subtitle = null,
         array $targetLanguages = [],
-        string $status = 'draft',
+        ?string $status = null,
         ?string $userId = null,
         ?string $image = null,
-        array $sectionsData = [],
-        array $faqsData = [],
-        array $postoperativeInstructionsData = [],
-        array $preparationStepsData = [],
-        array $recoveryPhasesData = [],
-        array $galleryData = []
+        ?array $sectionsData = null,
+        ?array $faqsData = null,
+        ?array $postoperativeInstructionsData = null,
+        ?array $preparationStepsData = null,
+        ?array $recoveryPhasesData = null,
+        ?array $galleryData = null,
+        bool $titleWasSent = false,
+        bool $subtitleWasSent = false
     ): void
     {
         $procedure = $this->repository->findById($id);
@@ -56,32 +62,71 @@ final class UpdateProcedureUseCase
             throw new RuntimeException("Procedure not found with ID: $id");
         }
 
-        $translations = [];
-        $translations[] = new ProcedureTranslation(null, $baseLang, null, $title, $subtitle);
+        // Resolve scalar values: use sent value or fallback to existing
+        $finalCategoryCode = $categoryCode ?? $procedure->categoryCode();
+        $finalStatus = $status ?? $procedure->status();
+        $finalUserId = $userId ?? $procedure->userId();
 
-        foreach ($targetLanguages as $lang) {
-            $translatedTitle = $this->translator->translate($title, $lang, $baseLang);
-            $translatedSubtitle = $subtitle ? $this->translator->translate($subtitle, $lang, $baseLang) : null;
-            $translations[] = new ProcedureTranslation(null, $lang, null, $translatedTitle, $translatedSubtitle);
+        // Determine if translatable content changed
+        $textChanged = $titleWasSent || $subtitleWasSent;
+
+        // Find existing baseLang translation
+        $existingTranslation = $procedure->getTranslation($baseLang);
+        if (!$existingTranslation && count($procedure->translations()) > 0) {
+            $existingTranslation = $procedure->translations()[0];
         }
 
-        // --- Handle Components ---
-        $sections = $this->createSections($sectionsData, $baseLang, $targetLanguages);
-        $faqs = $this->createFaqs($faqsData, $baseLang, $targetLanguages);
-        $instructions = $this->createInstructions($postoperativeInstructionsData, $baseLang, $targetLanguages);
-        $steps = $this->createSteps($preparationStepsData, $baseLang, $targetLanguages);
-        $phases = $this->createPhases($recoveryPhasesData, $baseLang, $targetLanguages);
-        $gallery = array_map(function($g) {
-            $pairId = isset($g['pairId']) && $g['pairId'] !== '' ? (int) $g['pairId'] : null;
-            return new ProcedureResultGallery(null, $g['path'], $g['type'], $pairId, (int) ($g['order'] ?? 0));
-        }, $galleryData);
+        $finalTitle = $titleWasSent ? ($title ?? '') : ($existingTranslation ? $existingTranslation->title() : '');
+        $finalSubtitle = $subtitleWasSent ? $subtitle : ($existingTranslation ? $existingTranslation->subtitle() : null);
+
+        // Build translations
+        if ($textChanged) {
+            $translations = [];
+            $translations[] = new ProcedureTranslation(null, $baseLang, null, $finalTitle, $finalSubtitle);
+
+            foreach ($targetLanguages as $lang) {
+                $translatedTitle = $this->translator->translate($finalTitle, $lang, $baseLang);
+                $translatedSubtitle = $finalSubtitle ? $this->translator->translate($finalSubtitle, $lang, $baseLang) : null;
+                $translations[] = new ProcedureTranslation(null, $lang, null, $translatedTitle, $translatedSubtitle);
+            }
+        } else {
+            $translations = $procedure->translations();
+        }
+
+        // --- Handle Components: null means keep existing ---
+        $sections = $sectionsData !== null
+            ? $this->createSections($sectionsData, $baseLang, $targetLanguages)
+            : $procedure->sections();
+
+        $faqs = $faqsData !== null
+            ? $this->createFaqs($faqsData, $baseLang, $targetLanguages)
+            : $procedure->faqs();
+
+        $instructions = $postoperativeInstructionsData !== null
+            ? $this->createInstructions($postoperativeInstructionsData, $baseLang, $targetLanguages)
+            : $procedure->postoperativeInstructions();
+
+        $steps = $preparationStepsData !== null
+            ? $this->createSteps($preparationStepsData, $baseLang, $targetLanguages)
+            : $procedure->preparationSteps();
+
+        $phases = $recoveryPhasesData !== null
+            ? $this->createPhases($recoveryPhasesData, $baseLang, $targetLanguages)
+            : $procedure->recoveryPhases();
+
+        $gallery = $galleryData !== null
+            ? array_map(function($g) {
+                $pairId = isset($g['pairId']) && $g['pairId'] !== '' ? (int) $g['pairId'] : null;
+                return new ProcedureResultGallery(null, $g['path'], $g['type'], $pairId, (int) ($g['order'] ?? 0));
+            }, $galleryData)
+            : $procedure->gallery();
 
         $updatedProcedure = new Procedure(
             $id,
-            $userId,
-            $image,
-            $categoryCode,
-            $status,
+            $finalUserId,
+            $image ?? $procedure->image(),
+            $finalCategoryCode,
+            $finalStatus,
             $procedure->views(),
             $translations,
             $sections,

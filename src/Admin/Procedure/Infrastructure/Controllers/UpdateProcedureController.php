@@ -28,7 +28,7 @@ final class UpdateProcedureController
 
     #[OA\Post(
         path: "/procedures/{id}",
-        summary: "Actualizar un procedimiento",
+        summary: "Actualizar un procedimiento (patch-style: solo campos enviados se actualizan)",
         tags: ["Procedure"],
         security: [["bearerAuth" => []]],
         parameters: [
@@ -45,10 +45,10 @@ final class UpdateProcedureController
             content: new OA\MediaType(
                 mediaType: "multipart/form-data",
                 schema: new OA\Schema(
-                    required: ["categoryCode", "baseLang", "title", "status"],
+                    required: ["baseLang"],
                     properties: [
-                        new OA\Property(property: "categoryCode", type: "string", example: "CIRUGIA_ESTETICA"),
                         new OA\Property(property: "baseLang", type: "string", example: "es"),
+                        new OA\Property(property: "categoryCode", type: "string", example: "CIRUGIA_ESTETICA"),
                         new OA\Property(property: "title", type: "string"),
                         new OA\Property(property: "subtitle", type: "string"),
                         new OA\Property(property: "status", type: "string", enum: ["draft", "published", "archived"]),
@@ -93,13 +93,13 @@ final class UpdateProcedureController
     public function __invoke(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'categoryCode' => 'required|string|exists:procedure_categories,code',
             'baseLang' => 'required|string|max:5',
-            'title' => 'required|string|max:255',
+            'categoryCode' => 'nullable|string|exists:procedure_categories,code',
+            'title' => 'nullable|string|max:255',
             'subtitle' => 'nullable|string',
-            'status' => 'required|string|in:draft,published,archived',
+            'status' => 'nullable|string|in:draft,published,archived',
             'userId' => 'nullable|string|exists:users,id',
-            'image' => 'nullable', // Puede ser un archivo nuevo o un string de la ruta existente
+            'image' => 'nullable',
 
             // Sections
             'sections' => 'nullable|array',
@@ -135,7 +135,7 @@ final class UpdateProcedureController
 
             // Gallery
             'gallery' => 'nullable|array',
-            'gallery.*.path' => 'nullable', // Puede ser un string (imagen existente) o un File (nueva imagen)
+            'gallery.*.path' => 'nullable',
             'gallery.*.type' => 'required|string',
             'gallery.*.pairId' => 'nullable|numeric',
             'gallery.*.order' => 'numeric',
@@ -146,48 +146,61 @@ final class UpdateProcedureController
         $targetLanguages = array_values(array_diff($configuredTargets, [$baseLang]));
 
         try {
-            $imageUrl = $request->input('image');
-            if ($request->hasFile('image')) {
-                $imageUrl = $this->storeImage($request->file('image'), "procedures/{$id}/main_image", true);
+            // Handle main image
+            $imageUrl = null;
+            if ($request->has('image')) {
+                $imageUrl = $request->input('image');
+                if ($request->hasFile('image')) {
+                    $imageUrl = $this->storeImage($request->file('image'), "procedures/{$id}/main_image", true);
+                }
             }
 
-            // --- Handle Gallery Files ---
-            $galleryData = $request->input('gallery', []);
-            $galleryFiles = $request->file('gallery', []);
-            
-            $filteredGalleryData = [];
+            // --- Handle Gallery Files (only if gallery was sent) ---
+            $galleryData = null;
+            if ($request->has('gallery')) {
+                $rawGalleryData = $request->input('gallery', []);
+                $galleryFiles = $request->file('gallery', []);
 
-            foreach ($galleryData as $index => &$item) {
-                // Si viene un archivo nuevo, lo subimos
-                if (isset($galleryFiles[$index]['path'])) {
-                    $item['path'] = $this->storeImage(
-                        $galleryFiles[$index]['path'],
-                        "procedures/{$id}/gallery"
-                    );
+                $galleryData = [];
+                foreach ($rawGalleryData as $index => &$item) {
+                    if (isset($galleryFiles[$index]['path'])) {
+                        $item['path'] = $this->storeImage(
+                            $galleryFiles[$index]['path'],
+                            "procedures/{$id}/gallery"
+                        );
+                    }
+
+                    if (!empty($item['path'])) {
+                        $galleryData[] = $item;
+                    }
                 }
-                
-                // Validar que efectivamente tenga un path, omitir vacíos
-                if (!empty($item['path'])) {
-                    $filteredGalleryData[] = $item;
-                }
+            }
+
+            // Handle section images
+            $sectionsData = null;
+            if ($request->has('sections')) {
+                $sectionsData = $request->input('sections', []);
+                // Section images are handled by the use case / kept as existing paths
             }
 
             $this->useCase->execute(
                 $id,
-                $request->input('categoryCode'),
                 $baseLang,
-                $request->input('title'),
-                $request->input('subtitle'),
+                $request->has('categoryCode') ? $request->input('categoryCode') : null,
+                $request->has('title') ? $request->input('title') : null,
+                $request->has('subtitle') ? $request->input('subtitle') : null,
                 $targetLanguages,
-                $request->input('status'),
-                $request->input('userId'),
+                $request->has('status') ? $request->input('status') : null,
+                $request->has('userId') ? $request->input('userId') : null,
                 $imageUrl,
-                $request->input('sections', []),
-                $request->input('faqs', []),
-                $request->input('postoperativeInstructions', []),
-                $request->input('preparationSteps', []),
-                $request->input('recoveryPhases', []),
-                $filteredGalleryData
+                $sectionsData,
+                $request->has('faqs') ? $request->input('faqs', []) : null,
+                $request->has('postoperativeInstructions') ? $request->input('postoperativeInstructions', []) : null,
+                $request->has('preparationSteps') ? $request->input('preparationSteps', []) : null,
+                $request->has('recoveryPhases') ? $request->input('recoveryPhases', []) : null,
+                $galleryData,
+                $request->has('title'),
+                $request->has('subtitle')
             );
 
             return response()->json([

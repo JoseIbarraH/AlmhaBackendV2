@@ -200,6 +200,14 @@ final class EloquentBlogRepository implements BlogRepositoryContract
             );
         })->toArray();
 
+        if ($lang) {
+            usort($translations, function($a, $b) use ($lang) {
+                if ($a->lang() === $lang) return -1;
+                if ($b->lang() === $lang) return 1;
+                return 0;
+            });
+        }
+
         $localizedTitle = null;
         if ($lang) {
             $found = $eloquentBlog->translations->where('lang', $lang)->first();

@@ -6,6 +6,7 @@ namespace Src\Admin\Procedure\Infrastructure\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Src\Admin\Procedure\Application\CreateProcedureCategoryUseCase;
 use Exception;
 
@@ -48,10 +49,13 @@ final class CreateProcedureCategoryController
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
-            'code' => 'required|string|max:255|unique:procedure_categories,code',
+            'code' => 'nullable|string|max:255|unique:procedure_categories,code',
             'baseLang' => 'required|string|max:5',
             'title' => 'required|string|max:255'
         ]);
+
+        // Auto-generate code if not provided
+        $code = $request->input('code') ?: Str::random(8);
 
         $baseLang = $request->input('baseLang');
         $configuredTargets = config('services.google_translate.targets', ['es', 'en']);
@@ -59,7 +63,7 @@ final class CreateProcedureCategoryController
 
         try {
             $this->useCase->execute(
-                $request->input('code'),
+                $code,
                 $baseLang,
                 $request->input('title'),
                 $targetLanguages
