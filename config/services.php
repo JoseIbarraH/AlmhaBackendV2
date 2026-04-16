@@ -35,14 +35,18 @@ return [
         ],
     ],
 
-    'google_translate' => [
-        'credentials_file' => storage_path('app/private/' . env('GOOGLE_CLOUD_TRANSLATE_CREDENTIALS_FILE', 'google-key.json')),
-        'targets' => explode(',', env('GOOGLE_TRANSLATE_TARGETS', 'es,en,fr')),
-    ],
-
     'n8n' => [
         'webhook_url' => env('N8N_WEBHOOK_URL'),
         'auth_token' => env('N8N_AUTH_TOKEN'),
     ],
 
+    'google_translate' => [
+        'credentials_file' => storage_path('app/private/' . env('GOOGLE_CLOUD_TRANSLATE_CREDENTIALS_FILE', 'google-key.json')),
+        'targets' => explode(',', env('GOOGLE_TRANSLATE_TARGETS', 'es,en,fr')),
+    ],
+
+    'google_analytics' => [
+        'property_id' => env('GOOGLE_ANALYTICS_PROPERTY_ID'),
+        'credentials_file' => storage_path('app/private/' . env('GOOGLE_ANALYTICS_CREDENTIALS_FILE', 'analytics-key.json')),
+    ],
 ];

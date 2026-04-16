@@ -24,4 +24,9 @@ final class AuditEloquentModel extends Model
     protected $casts = [
         'payload' => 'array'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
 }

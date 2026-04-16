@@ -80,6 +80,11 @@ class AppServiceProvider extends ServiceProvider
             \Src\Admin\Design\Domain\DesignRepositoryContract::class,
             \Src\Admin\Design\Infrastructure\Repositories\EloquentDesignRepository::class
         );
+
+        $this->app->bind(
+            \Src\Admin\Analytics\Domain\Contracts\AnalyticsRepositoryContract::class,
+            \Src\Admin\Analytics\Infrastructure\Repositories\SpatieAnalyticsRepository::class
+        );
     }
 
     /**
