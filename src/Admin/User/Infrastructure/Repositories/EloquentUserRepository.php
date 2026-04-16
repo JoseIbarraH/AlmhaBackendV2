@@ -15,6 +15,7 @@ use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
 use Src\Admin\User\Domain\ValueObjects\UserStatus;
 use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
+use Illuminate\Support\Facades\DB;
 
 final class EloquentUserRepository implements UserRepositoryContract
 {
@@ -27,21 +28,23 @@ final class EloquentUserRepository implements UserRepositoryContract
 
     public function save(User $user): void
     {
-        $data = [
-            'name' => $user->name()->value(),
-            'email' => $user->email()->value(),
-            'email_verified_at' => $user->emailVerifiedDate()->value(),
-            'password' => $user->password()->value(),
-            'remember_token' => $user->rememberToken()->value(),
-            'is_active' => $user->status()->value(),
-            'is_main_admin' => $user->isMainAdmin()->value(),
-        ];
+        DB::transaction(function () use ($user) {
+            $data = [
+                'name' => $user->name()->value(),
+                'email' => $user->email()->value(),
+                'email_verified_at' => $user->emailVerifiedDate()->value(),
+                'password' => $user->password()->value(),
+                'remember_token' => $user->rememberToken()->value(),
+                'is_active' => $user->status()->value(),
+                'is_main_admin' => $user->isMainAdmin()->value(),
+            ];
 
-        $newUserModel = $this->eloquentUserModel->create($data);
+            $newUserModel = $this->eloquentUserModel->create($data);
 
-        if (!empty($user->roles())) {
-            $newUserModel->assignRole($user->roles());
-        }
+            if (!empty($user->roles())) {
+                $newUserModel->assignRole($user->roles());
+            }
+        });
     }
 
     public function findByCriteria(?string $term, ?UserName $name, ?UserEmail $email): array
@@ -106,19 +109,21 @@ final class EloquentUserRepository implements UserRepositoryContract
             return;
         }
 
-        $eloquentUser = $this->eloquentUserModel->find($user->id()->value());
-        
-        if ($eloquentUser) {
-            $eloquentUser->update([
-                'name' => $user->name()->value(),
-                'email' => $user->email()->value(),
-                'password' => $user->password()->value(),
-                'is_active' => $user->status()->value(),
-                'is_main_admin' => $user->isMainAdmin()->value(),
-            ]);
+        DB::transaction(function () use ($user) {
+            $eloquentUser = $this->eloquentUserModel->find($user->id()->value());
+            
+            if ($eloquentUser) {
+                $eloquentUser->update([
+                    'name' => $user->name()->value(),
+                    'email' => $user->email()->value(),
+                    'password' => $user->password()->value(),
+                    'is_active' => $user->status()->value(),
+                    'is_main_admin' => $user->isMainAdmin()->value(),
+                ]);
 
-            $eloquentUser->syncRoles($user->roles());
-        }
+                $eloquentUser->syncRoles($user->roles());
+            }
+        });
     }
 
     public function delete(UserId $id): void
@@ -140,6 +145,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'name' => $user->name,
                 'email' => $user->email,
                 'is_active' => (bool)$user->is_active,
+                'is_main_admin' => (bool)$user->is_main_admin,
                 'email_verified_at' => $user->email_verified_at,
                 'roles' => $user->getRoleNames()->toArray(),
             ];

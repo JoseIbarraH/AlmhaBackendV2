@@ -12,6 +12,7 @@ use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\Exceptions\UserNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Src\Admin\User\Domain\Entity\User;
+use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
 
 final class UpdateUserUseCase
 {
@@ -45,6 +46,7 @@ final class UpdateUserUseCase
             $passwordVo,
             $user->rememberToken(),
             $statusVo,
+            $user->isMainAdmin(),
             $roles,
             $user->id()
         );

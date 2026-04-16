@@ -26,6 +26,10 @@ final class DeleteUserUseCase
             throw new UserNotFoundException($id);
         }
 
+        if ($user->isMainAdmin()->value()) {
+            throw new \Exception("Cannot delete the main administrator account.");
+        }
+
         $this->repository->delete($userId);
     }
 }

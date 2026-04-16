@@ -32,6 +32,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'teams' => ['view_teams', 'create_teams', 'edit_teams', 'delete_teams', 'view_team_detail'],
             'audits' => ['view_audits'],
             'roles' => ['view_roles', 'assign_roles', 'view_permissions'],
+            'designs' => ['view_designs', 'create_designs', 'edit_designs', 'delete_designs'],
         ];
 
         $allPermissionNames = [];
@@ -67,6 +68,10 @@ class RolesAndPermissionsSeeder extends Seeder
             'audit_viewer' => [
                 'titles' => ['es' => 'Visor de Auditoría', 'en' => 'Audit Viewer'],
                 'permissions' => $permissionsByModule['audits']
+            ],
+            'design_manager' => [
+                'titles' => ['es' => 'Gestor de Diseño', 'en' => 'Design Manager'],
+                'permissions' => $permissionsByModule['designs']
             ],
         ];
 

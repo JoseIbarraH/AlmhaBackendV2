@@ -12,6 +12,7 @@ use Src\Admin\User\Domain\ValueObjects\UserEmailVerifiedDate;
 use Src\Admin\User\Domain\ValueObjects\UserName;
 use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
+use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
 
 final class CreateUserUseCase
 {
@@ -38,8 +39,9 @@ final class CreateUserUseCase
         $password = new UserPassword($userPassword);
         $rememberToken = new UserRememberToken($userRememberToken);
         $status = new \Src\Admin\User\Domain\ValueObjects\UserStatus($isActive);
+        $isMainAdmin = new UserMainAdmin(false);
 
-        $user = User::create($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $roles);
+        $user = User::create($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $isMainAdmin, $roles);
 
         $this->repository->save($user);
 
