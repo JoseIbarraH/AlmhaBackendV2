@@ -69,7 +69,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'titles' => ['es' => 'Visor de Auditoría', 'en' => 'Audit Viewer'],
                 'permissions' => $permissionsByModule['audits']
             ],
-            'design_manager' => [
+            'setting_manager' => [
                 'titles' => ['es' => 'Gestor de Diseño', 'en' => 'Design Manager'],
                 'permissions' => $permissionsByModule['designs']
             ],

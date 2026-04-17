@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Landing/Subscription/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Design/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Analytics/Infrastructure/routes/api.php');
+                    require base_path('src/Admin/Settings/Infrastructure/Routes/api.php');
 
                     // Setup Inicial
                     require base_path('src/Admin/User/Infrastructure/routes/instance_setup.php');
