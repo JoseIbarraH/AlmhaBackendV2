@@ -9,32 +9,8 @@ use Spatie\Analytics\Period;
 interface AnalyticsRepositoryContract
 {
     /**
-     * Get primary Dashboard KPIs:
-     * Active Users, Page Views, Engaged Sessions, Engagement Rate, Average Session Duration
+     * Get aggregate Dashboard statistics for a single-endpoint view:
+     * KPIs, Weekly Traffic, Device/OS Segmentation, Ranking Tables, Geography, and Social Share.
      */
-    public function getKpis(Period $period): array;
-
-    /**
-     * Get the application pulse for charting:
-     * activeUsers vs newUsers grouped by date
-     */
-    public function getAppPulse(Period $period): array;
-
-    /**
-     * Get user behavior metrics:
-     * Most Visited Pages (pagePath, pageTitle), Traffic Sources, and Source/Medium
-     */
-    public function getBehavior(Period $period): array;
-
-    /**
-     * Get audience profile:
-     * Devices (deviceCategory), Geography (country, city), and Browsers (browser)
-     */
-    public function getUserProfile(Period $period): array;
-
-    /**
-     * Get valuable actions:
-     * Event counts grouped by eventName
-     */
-    public function getValuableActions(Period $period): array;
+    public function getDashboardStats(Period $period): array;
 }

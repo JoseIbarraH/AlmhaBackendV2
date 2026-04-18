@@ -8,13 +8,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Spatie\Analytics\Period;
-use Src\Admin\Analytics\Application\GetDashboardKpisUseCase;
+use Src\Admin\Analytics\Application\GetDashboardStatsUseCase;
 
-final class GetDashboardKpisController
+final class GetDashboardStatsController
 {
-    private GetDashboardKpisUseCase $useCase;
+    private GetDashboardStatsUseCase $useCase;
 
-    public function __construct(GetDashboardKpisUseCase $useCase)
+    public function __construct(GetDashboardStatsUseCase $useCase)
     {
         $this->useCase = $useCase;
     }
@@ -42,6 +42,6 @@ final class GetDashboardKpisController
             );
         }
 
-        return Period::days(30);
+        return Period::days(30); // Default to last 30 days for dashboard to ensure data availability
     }
 }

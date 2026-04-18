@@ -7,7 +7,7 @@ namespace Src\Admin\Analytics\Application;
 use Spatie\Analytics\Period;
 use Src\Admin\Analytics\Domain\Contracts\AnalyticsRepositoryContract;
 
-final class GetAppPulseUseCase
+final class GetDashboardStatsUseCase
 {
     private AnalyticsRepositoryContract $repository;
 
@@ -18,6 +18,6 @@ final class GetAppPulseUseCase
 
     public function execute(Period $period): array
     {
-        return $this->repository->getAppPulse($period);
+        return $this->repository->getDashboardStats($period);
     }
 }

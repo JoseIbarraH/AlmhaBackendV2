@@ -4,135 +4,118 @@ declare(strict_types=1);
 
 namespace Src\Admin\Analytics\Infrastructure\Repositories;
 
+use Illuminate\Support\Facades\Cache;
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 use Src\Admin\Analytics\Domain\Contracts\AnalyticsRepositoryContract;
 
 final class SpatieAnalyticsRepository implements AnalyticsRepositoryContract
 {
-    public function getKpis(Period $period): array
+    public function getDashboardStats(Period $period): array
     {
-        $data = Analytics::get(
-            $period,
-            ['activeUsers', 'screenPageViews', 'sessions', 'engagementRate', 'averageSessionDuration'],
-            []
-        );
+        $cacheKey = "analytics.dashboard." . $period->startDate->format('Y-m-d') . "." . $period->endDate->format('Y-m-d');
 
-        return [
-            'metrics' => $data->first() ?? []
-        ];
-    }
+        return Cache::remember($cacheKey, now()->addHours(24), function () use ($period) {
+            // 1. Metrics (KPIs)
+            $kpiData = Analytics::get(
+                $period,
+                ['activeUsers', 'sessions', 'bounceRate', 'averageSessionDuration', 'screenPageViews']
+            )->first();
 
-    public function getAppPulse(Period $period): array
-    {
-        $daily = Analytics::get(
-            $period,
-            ['activeUsers', 'newUsers'],
-            ['date']
-        );
+            $kpis = $kpiData ?? [
+                'activeUsers' => 0,
+                'sessions' => 0,
+                'bounceRate' => 0,
+                'averageSessionDuration' => 0,
+                'screenPageViews' => 0,
+            ];
 
-        $weekly = Analytics::get(
-            $period,
-            ['activeUsers', 'newUsers'],
-            ['yearWeek']
-        );
+            // 2. Weekly Traffic (Daily evolution)
+            $weeklyTraffic = Analytics::get(
+                $period,
+                ['sessions'],
+                ['date']
+            )->toArray();
 
-        $monthly = Analytics::get(
-            $period,
-            ['activeUsers', 'newUsers'],
-            ['yearMonth']
-        );
+            // 3. Device & OS Segmentation
+            $devices = Analytics::get(
+                $period,
+                ['sessions'],
+                ['deviceCategory']
+            )->toArray();
 
-        $yearly = Analytics::get(
-            $period,
-            ['activeUsers', 'newUsers'],
-            ['year']
-        );
+            $os = Analytics::get(
+                $period,
+                ['sessions'],
+                ['operatingSystem']
+            );
+            $osComparison = $os->filter(fn($item) => in_array($item['operatingSystem'], ['iOS', 'Android']))->values()->toArray();
 
-        $dayOfWeek = Analytics::get(
-            $period,
-            ['activeUsers', 'newUsers'],
-            ['dayOfWeek']
-        );
+            // 4. Ranking Tables (Top 5)
+            $browsers = Analytics::get(
+                $period,
+                ['sessions', 'bounceRate'],
+                ['browser'],
+                5
+            )->toArray();
 
-        return [
-            'pulse' => [
-                'daily' => $daily->toArray(),
-                'weekly' => $weekly->toArray(),
-                'day_of_week' => $dayOfWeek->toArray(),
-                'monthly' => $monthly->toArray(),
-                'yearly' => $yearly->toArray(),
-            ]
-        ];
-    }
+            $acquisition = Analytics::get(
+                $period,
+                ['sessions'],
+                ['sessionSourceMedium'],
+                5
+            )->toArray();
 
-    public function getBehavior(Period $period): array
-    {
-        $pages = Analytics::get(
-            $period,
-            ['screenPageViews'],
-            ['pagePath', 'pageTitle'],
-            10
-        );
+            $referrers = Analytics::get(
+                $period,
+                ['sessions'],
+                ['pageReferrer'],
+                5
+            )->toArray();
 
-        $channelGroup = Analytics::get(
-            $period,
-            ['sessions'],
-            ['sessionDefaultChannelGroup']
-        );
+            // 5. Geography & Social
+            $geography = Analytics::get(
+                $period,
+                ['sessions'],
+                ['country'],
+                10
+            )->toArray();
 
-        $sourceMedium = Analytics::get(
-            $period,
-            ['sessions'],
-            ['sessionSource', 'sessionMedium'],
-            15
-        );
+            $socialNetworks = [
+                'Facebook', 'Instagram', 'YouTube', 'LinkedIn', 'Twitter', 'X', 'TikTok', 
+                'WhatsApp', 'Pinterest', 'Reddit', 't.co', 'lnkd.in', 'fb.me'
+            ];
+            
+            $socialSources = Analytics::get(
+                $period,
+                ['sessions'],
+                ['sessionSource']
+            );
 
-        return [
-            'top_pages' => $pages->toArray(),
-            'channel_groups' => $channelGroup->toArray(),
-            'source_mediums' => $sourceMedium->toArray()
-        ];
-    }
+            $socialShare = $socialSources->filter(function ($item) use ($socialNetworks) {
+                foreach ($socialNetworks as $network) {
+                    if (stripos($item['sessionSource'], $network) !== false) {
+                        return true;
+                    }
+                }
+                return false;
+            })->values()->toArray();
 
-    public function getUserProfile(Period $period): array
-    {
-        $devices = Analytics::get(
-            $period,
-            ['activeUsers'],
-            ['deviceCategory']
-        );
-
-        $geography = Analytics::get(
-            $period,
-            ['activeUsers'],
-            ['country', 'city'],
-            20
-        );
-
-        $browsers = Analytics::get(
-            $period,
-            ['activeUsers'],
-            ['browser']
-        );
-
-        return [
-            'devices' => $devices->toArray(),
-            'geography' => $geography->toArray(),
-            'browsers' => $browsers->toArray()
-        ];
-    }
-
-    public function getValuableActions(Period $period): array
-    {
-        $events = Analytics::get(
-            $period,
-            ['eventCount'],
-            ['eventName']
-        );
-
-        return [
-            'events' => $events->toArray()
-        ];
+            return [
+                'kpis' => $kpis,
+                'weekly_traffic' => $weeklyTraffic,
+                'segmentation' => [
+                    'devices' => $devices,
+                    'os_comparison' => $osComparison,
+                ],
+                'rankings' => [
+                    'browsers' => $browsers,
+                    'acquisition' => $acquisition,
+                    'referrers' => $referrers,
+                ],
+                'geography' => $geography,
+                'social_share' => $socialShare,
+            ];
+        });
     }
 }

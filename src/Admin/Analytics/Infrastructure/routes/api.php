@@ -1,18 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Src\Admin\Analytics\Infrastructure\Controllers\GetAppPulseController;
-use Src\Admin\Analytics\Infrastructure\Controllers\GetBehaviorController;
-use Src\Admin\Analytics\Infrastructure\Controllers\GetDashboardKpisController;
-use Src\Admin\Analytics\Infrastructure\Controllers\GetUserProfileController;
-use Src\Admin\Analytics\Infrastructure\Controllers\GetValuableActionsController;
+use Src\Admin\Analytics\Infrastructure\Controllers\GetDashboardStatsController;
 
 Route::prefix('analytics')
-    /* ->middleware(['auth:api', 'role:super_admin|admin']) */
+    ->middleware(['auth:api'])
     ->group(function () {
-        Route::get('/kpis', GetDashboardKpisController::class);
-        Route::get('/pulse', GetAppPulseController::class);
-        Route::get('/behavior', GetBehaviorController::class);
-        Route::get('/profile', GetUserProfileController::class);
-        Route::get('/actions', GetValuableActionsController::class);
+        Route::get('/dashboard/stats', GetDashboardStatsController::class);
     });
