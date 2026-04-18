@@ -101,6 +101,19 @@ final class SpatieAnalyticsRepository implements AnalyticsRepositoryContract
                 return false;
             })->values()->toArray();
 
+            // 6. Demographics
+            $ageBrackets = Analytics::get(
+                $period,
+                ['sessions'],
+                ['userAgeBracket']
+            )->toArray();
+
+            $gender = Analytics::get(
+                $period,
+                ['sessions'],
+                ['userGender']
+            )->toArray();
+
             return [
                 'kpis' => $kpis,
                 'weekly_traffic' => $weeklyTraffic,
@@ -115,6 +128,10 @@ final class SpatieAnalyticsRepository implements AnalyticsRepositoryContract
                 ],
                 'geography' => $geography,
                 'social_share' => $socialShare,
+                'demographics' => [
+                    'age' => $ageBrackets,
+                    'gender' => $gender,
+                ],
             ];
         });
     }
