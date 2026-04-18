@@ -47,6 +47,7 @@ final class UpdateUserUseCase
             $user->rememberToken(),
             $statusVo,
             $user->isMainAdmin(),
+            $user->verificationToken(),
             $roles,
             $user->id()
         );

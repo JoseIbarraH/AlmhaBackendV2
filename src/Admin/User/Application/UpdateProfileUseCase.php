@@ -42,6 +42,7 @@ final class UpdateProfileUseCase
             $user->rememberToken(),
             $user->status(),
             $user->isMainAdmin(),
+            $user->verificationToken(),
             $user->roles(),
             $user->id()
         );
