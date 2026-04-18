@@ -36,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectGuestsTo(fn () => null);
+
         $middleware->api(append: [
             \Src\Shared\Infrastructure\Middleware\AuditLogMiddleware::class,
         ]);
@@ -47,6 +49,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Personalizar respuesta de error de autenticación
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'No autorizado.',
+                ], 401);
+            }
+        });
+
         // Esto detecta si la petición falló y fuerza la respuesta JSON
         $exceptions->shouldRenderJsonWhen(function ($request, $e) {
             return true;

@@ -15,6 +15,7 @@ use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
 use Src\Admin\User\Domain\ValueObjects\UserStatus;
 use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
+use Src\Admin\User\Domain\ValueObjects\UserVerificationToken;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentUserRepository implements UserRepositoryContract
@@ -37,6 +38,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 'remember_token' => $user->rememberToken()->value(),
                 'is_active' => $user->status()->value(),
                 'is_main_admin' => $user->isMainAdmin()->value(),
+                'verification_token' => $user->verificationToken()->value(),
             ];
 
             $newUserModel = $this->eloquentUserModel->create($data);
@@ -77,6 +79,7 @@ final class EloquentUserRepository implements UserRepositoryContract
                 new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
                 new UserStatus((bool)$user->is_active),
                 new UserMainAdmin((bool)$user->is_main_admin),
+                new UserVerificationToken($user->verification_token),
                 $user->getRoleNames()->toArray(),
                 new UserId((string)$user->id)
             );
@@ -98,6 +101,7 @@ final class EloquentUserRepository implements UserRepositoryContract
             new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
             new UserStatus((bool)$user->is_active),
             new UserMainAdmin((bool)$user->is_main_admin),
+            new UserVerificationToken($user->verification_token),
             $user->getRoleNames()->toArray(),
             new UserId((string)$user->id)
         );
@@ -119,6 +123,8 @@ final class EloquentUserRepository implements UserRepositoryContract
                     'password' => $user->password()->value(),
                     'is_active' => $user->status()->value(),
                     'is_main_admin' => $user->isMainAdmin()->value(),
+                    'email_verified_at' => $user->emailVerifiedDate()->value(),
+                    'verification_token' => $user->verificationToken()->value(),
                 ]);
 
                 $eloquentUser->syncRoles($user->roles());
@@ -160,5 +166,27 @@ final class EloquentUserRepository implements UserRepositoryContract
     public function hasAdmin(): bool
     {
         return $this->eloquentUserModel->role('super_admin')->exists();
+    }
+
+    public function findByToken(string $token): ?User
+    {
+        $user = $this->eloquentUserModel->where('verification_token', $token)->first();
+
+        if (!$user) {
+            return null;
+        }
+
+        return new User(
+            new UserName($user->name),
+            new UserEmail($user->email),
+            new UserEmailVerifiedDate($user->email_verified_at !== null ? (string)$user->email_verified_at : null),
+            new UserPassword($user->password),
+            new UserRememberToken($user->remember_token !== null ? (string)$user->remember_token : null),
+            new UserStatus((bool)$user->is_active),
+            new UserMainAdmin((bool)$user->is_main_admin),
+            new UserVerificationToken($user->verification_token),
+            $user->getRoleNames()->toArray(),
+            new UserId((string)$user->id)
+        );
     }
 }

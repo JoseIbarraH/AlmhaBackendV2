@@ -45,7 +45,8 @@ class LoginController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: "Credenciales inválidas")
+            new OA\Response(response: 401, description: "Credenciales inválidas"),
+            new OA\Response(response: 403, description: "Correo no verificado")
         ]
     )]
     public function __invoke(Request $request): JsonResponse
@@ -69,6 +70,11 @@ class LoginController extends Controller
                 'expires_in' => $rememberMe ? 43200 * 60 : config('jwt.ttl', 60) * 60
             ], 200);
             
+        } catch (\Src\Admin\Auth\Domain\Exceptions\EmailNotVerifiedException $e) {
+            return response()->json([
+                'error' => 'not_verified',
+                'message' => $e->getMessage()
+            ], 403);
         } catch (InvalidCredentialsException $e) {
             return response()->json([
                 'error' => $e->getMessage()

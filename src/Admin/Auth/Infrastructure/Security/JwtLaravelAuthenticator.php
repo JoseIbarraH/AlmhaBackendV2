@@ -27,6 +27,11 @@ class JwtLaravelAuthenticator implements AuthenticatorContract
             throw new InvalidCredentialsException();
         }
 
+        $user = Auth::guard('api')->user();
+        if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail()) {
+            throw new \Src\Admin\Auth\Domain\Exceptions\EmailNotVerifiedException();
+        }
+
         return new AuthToken($token);
     }
 

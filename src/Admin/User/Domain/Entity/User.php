@@ -10,6 +10,7 @@ use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
 use Src\Admin\User\Domain\ValueObjects\UserStatus;
 use Src\Admin\User\Domain\ValueObjects\UserId;
 use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
+use Src\Admin\User\Domain\ValueObjects\UserVerificationToken;
 
 final class User
 {
@@ -21,6 +22,7 @@ final class User
     private $rememberToken;
     private $status;
     private $isMainAdmin;
+    private $verificationToken;
     private $roles;
 
 
@@ -32,6 +34,7 @@ final class User
         UserRememberToken $rememberToken,
         UserStatus $status,
         UserMainAdmin $isMainAdmin,
+        UserVerificationToken $verificationToken,
         array $roles = [],
         ?UserId $id = null
     )
@@ -43,6 +46,7 @@ final class User
         $this->rememberToken = $rememberToken;
         $this->status = $status;
         $this->isMainAdmin = $isMainAdmin;
+        $this->verificationToken = $verificationToken;
         $this->roles = $roles;
         $this->id = $id;
     }
@@ -92,6 +96,22 @@ final class User
         return $this->roles;
     }
 
+    public function verificationToken(): UserVerificationToken
+    {
+        return $this->verificationToken;
+    }
+
+    public function verify(): void
+    {
+        $this->emailVerifiedDate = new UserEmailVerifiedDate((new \DateTime())->format('Y-m-d H:i:s'));
+        $this->verificationToken = new UserVerificationToken(null);
+    }
+
+    public function clearVerificationToken(): void
+    {
+        $this->verificationToken = new UserVerificationToken(null);
+    }
+
     public static function create(
         UserName $name,
         UserEmail $email,
@@ -100,11 +120,12 @@ final class User
         UserRememberToken $rememberToken,
         UserStatus $status,
         UserMainAdmin $isMainAdmin,
+        UserVerificationToken $verificationToken,
         array $roles = [],
         ?UserId $id = null
     ): User
     {
-        $user = new self($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $isMainAdmin, $roles, $id);
+        $user = new self($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $isMainAdmin, $verificationToken, $roles, $id);
 
         return $user;
     }

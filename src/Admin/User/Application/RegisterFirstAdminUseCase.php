@@ -13,6 +13,7 @@ use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
 use Src\Admin\User\Domain\ValueObjects\UserStatus;
 use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
+use Src\Admin\User\Domain\ValueObjects\UserVerificationToken;
 
 final class RegisterFirstAdminUseCase
 {
@@ -40,9 +41,10 @@ final class RegisterFirstAdminUseCase
         $rememberToken = new UserRememberToken(null);
         $status = new UserStatus(true);
         $isMainAdmin = new UserMainAdmin(true);
+        $verificationToken = new UserVerificationToken(null);
         $roles = ['super_admin'];
 
-        $user = User::create($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $isMainAdmin, $roles);
+        $user = User::create($name, $email, $emailVerifiedDate, $password, $rememberToken, $status, $isMainAdmin, $verificationToken, $roles);
 
         $this->repository->save($user);
     }

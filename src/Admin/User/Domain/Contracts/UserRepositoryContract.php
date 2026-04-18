@@ -22,4 +22,6 @@ interface UserRepositoryContract
     public function getAll(int $page = 1, int $perPage = 15): array;
 
     public function hasAdmin(): bool;
+
+    public function findByToken(string $token): ?User;
 }
