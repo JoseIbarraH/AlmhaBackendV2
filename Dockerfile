@@ -107,7 +107,12 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 
 # Move php-fpm from default :9000 to :9001 so nginx can own :9000 externally.
+# Also strip any CR (\r) that Git may have introduced on Windows, which would
+# otherwise break the entrypoint shebang on Linux with "not found" errors.
 RUN sed -i 's|^listen = 9000|listen = 127.0.0.1:9001|' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
+    && sed -i 's/\r$//' /etc/nginx/http.d/default.conf \
+    && sed -i 's/\r$//' /etc/supervisor/conf.d/supervisord.conf \
     && chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /run/nginx /var/log/supervisor \
     && chown -R www-data:www-data storage bootstrap/cache \
