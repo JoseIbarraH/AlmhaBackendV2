@@ -84,10 +84,10 @@ EXPOSE 9000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD curl -fsS http://127.0.0.1:9000/up || exit 1
 
-# Run migrations + cache + Octane. If the DB isn't reachable yet the container
-# stays up anyway so logs are inspectable in Dokploy.
+# Cache framework artefacts and start Octane. DB migrations are intentionally
+# NOT run here — operator owns that via `php artisan migrate` inside the
+# container (or a separate one-shot Dokploy service) after reviewing state.
 CMD ["sh", "-c", "\
-    php artisan migrate --force || echo '[start] migrate failed, continuing' && \
     php artisan config:cache && \
     php artisan route:cache && \
     php artisan view:cache && \
