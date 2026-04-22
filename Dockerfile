@@ -9,7 +9,7 @@
 #   docker build -t almha-backend .
 #
 # Run:
-#   docker run -p 8000:80 --env-file .env almha-backend
+#   docker run -p 8000:9000 --env-file .env almha-backend
 #
 # Dokploy: set the Dockerfile path to ./Dockerfile in the service config.
 # ======================================================================
@@ -103,20 +103,21 @@ COPY --from=vendor /app /var/www/html
 
 # Copy infrastructure configs
 COPY docker/nginx.conf       /etc/nginx/http.d/default.conf
+COPY docker/php-fpm.conf     /usr/local/etc/php-fpm.d/zz-override.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /run/nginx /var/log/supervisor \
-    && chown -R www-data:www-data storage bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache /run \
     && chmod -R ug+rwx storage bootstrap/cache
 
-# Port 80 for HTTP — Dokploy's Traefik forwards here after TLS termination.
-EXPOSE 80
+# Port 9000 for HTTP — Dokploy's Traefik forwards here after TLS termination.
+EXPOSE 9000
 
 # Health endpoint built into Laravel (see /up route in framework).
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -fsS http://127.0.0.1/up || exit 1
+    CMD curl -fsS http://127.0.0.1:9000/up || exit 1
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

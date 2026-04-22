@@ -153,7 +153,7 @@ Un solo container con **nginx + php-fpm + queue worker** gestionados por supervi
 
 ```bash
 docker build -t almha-backend .
-docker run -p 8000:80 --env-file .env almha-backend
+docker run -p 8000:9000 --env-file .env almha-backend
 ```
 
 Luego `http://localhost:8000/up` → debe responder con el health check de Laravel.
@@ -181,7 +181,7 @@ Luego `http://localhost:8000/up` → debe responder con el health check de Larav
 2. **Build Type**: Dockerfile (ruta `./Dockerfile`)
 3. **Environment**: pega las variables de arriba (Dokploy tiene la UI para esto)
 4. **Domain**: asigna tu dominio; Dokploy pedirá cert Let's Encrypt automático
-5. **Port**: `80` (el que expone el container)
+5. **Port**: `9000` (el que expone el container)
 6. **Deploy**
 
 Dokploy ejecuta `docker build` desde el repo, arranca el container, y Traefik le manda tráfico HTTPS.
