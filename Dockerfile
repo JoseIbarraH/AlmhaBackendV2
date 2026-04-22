@@ -109,7 +109,7 @@ COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /run/nginx /var/log/supervisor \
-    && chown -R www-data:www-data storage bootstrap/cache /run \
+    && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwx storage bootstrap/cache
 
 # Port 9000 for HTTP — Dokploy's Traefik forwards here after TLS termination.
