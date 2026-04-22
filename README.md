@@ -140,23 +140,36 @@ Con esto, todos los endpoints `/api/client/*` retornan contenido real y el front
 
 ## 🐳 Despliegue con Docker / Dokploy
 
-El proyecto incluye un `Dockerfile` multi-stage y configuraciones en `docker/` listas para deployar a Dokploy (o cualquier host Docker detrás de un reverse proxy que termine TLS).
+El proyecto incluye **dos Dockerfiles** listos para deploy en Dokploy:
+- `Dockerfile` — servicio HTTP principal (Laravel Octane + Swoole en `:9000`)
+- `Dockerfile.worker` — queue worker independiente (procesa jobs de n8n, emails, etc.)
 
-### Qué hay dentro del container
-Un solo container con **nginx + php-fpm + queue worker** gestionados por supervisor:
-- `nginx` sirve HTTP en el puerto **80** (Dokploy/Traefik termina TLS al frente)
-- `php-fpm` procesa las peticiones PHP
-- `queue:work` procesa los jobs dispatcheados (webhooks n8n, emails, etc.)
-- `entrypoint.sh` al arrancar: genera `APP_KEY` si falta, corre `migrate --force`, cachea config/routes/views, y crea el storage symlink
+### Stack del container web
+
+Un único proceso PHP sirviendo HTTP directo vía **Laravel Octane + Swoole**:
+- Sin nginx / php-fpm / supervisor — Octane corre como HTTP server en el puerto `9000`
+- Framework queda en memoria → mucho más rápido que el modelo FPM tradicional
+- Ideal para Dokploy: Traefik termina TLS en `:443` y forwardea a `:9000` del container
+
+### Requisitos antes del primer build
+
+Octane tiene que estar instalado en `composer.json`. Si aún no lo tienes:
+
+```bash
+composer require laravel/octane
+php artisan octane:install --server=swoole
+git add composer.json composer.lock config/octane.php
+git commit -m "Add Octane with Swoole"
+```
 
 ### Build + run local
 
 ```bash
 docker build -t almha-backend .
-docker run -p 8000:9000 --env-file .env almha-backend
+docker run -p 9000:9000 --env-file .env almha-backend
 ```
 
-Luego `http://localhost:8000/up` → debe responder con el health check de Laravel.
+Luego `http://localhost:9000/up` → debe responder con el health check de Laravel.
 
 ### Variables de entorno críticas en Dokploy
 
@@ -204,15 +217,22 @@ Si usas Google Cloud, los JSON de credenciales deben ir en `storage/app/private/
 - Opción A: monta el volumen de storage y copia los JSON dentro (persistente)
 - Opción B: sube cada credencial como "Secret File" en la UI de Dokploy y mapealas
 
-### Queue worker fuera del container (opcional, recomendado para producción)
+### Queue worker como servicio separado
 
-El Dockerfile actual corre el queue worker en el mismo container que nginx. Para más escala, puedes correr un **segundo servicio en Dokploy** con el mismo Dockerfile pero comando custom:
+El `Dockerfile.worker` es una imagen gemela pero con `CMD` distinto: corre `queue:work` en vez de Octane. Esto permite escalar HTTP y queue independientemente.
 
-```
-php artisan queue:work --tries=3 --max-time=3600
-```
+**En Dokploy crea un segundo service**:
+1. Mismo repo Git
+2. **Dockerfile path**: `./Dockerfile.worker`
+3. Mismas env vars que el servicio web (copia/pega)
+4. **Sin** dominio asignado (no sirve HTTP, solo procesa jobs)
+5. Deploy
 
-Así escalás workers independientemente del tráfico HTTP. Si lo haces, puedes comentar la sección `[program:queue-worker]` en `docker/supervisord.conf`.
+Ahora tienes dos containers corriendo del mismo codebase:
+- `almha-backend` → Octane en `:9000` (tráfico HTTP)
+- `almha-backend-worker` → procesa la cola `jobs` en segundo plano
+
+Para escalar workers: en la UI de Dokploy del servicio worker, aumenta el número de réplicas.
 
 ### Verificación post-deploy
 

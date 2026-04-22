@@ -1,0 +1,52 @@
+# ======================================================================
+# AlmhaBackendV2 — queue worker (Dokploy secondary service)
+#
+# Same image as the main Dockerfile but runs `queue:work` instead of Octane.
+# Deploy as a separate Dokploy service so HTTP and queue scale independently.
+#
+# Build:  docker build -f Dockerfile.worker -t almha-backend-worker .
+# Run:    docker run --env-file .env almha-backend-worker
+# ======================================================================
+
+FROM php:8.4-cli
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git unzip curl procps \
+        libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev \
+        libcurl4-openssl-dev libssl-dev zlib1g-dev libicu-dev \
+        g++ libevent-dev libfreetype6-dev libjpeg62-turbo-dev libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j"$(nproc)" \
+        gd pdo pdo_mysql pdo_pgsql pgsql ftp mbstring zip exif pcntl bcmath sockets intl opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN { \
+        echo 'memory_limit=256M'; \
+        echo 'expose_php=Off'; \
+    } > /usr/local/etc/php/conf.d/zz-production.ini
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+
+COPY composer.json composer.lock artisan ./
+
+RUN mkdir -p bootstrap/cache storage/app storage/framework/cache/data \
+        storage/framework/sessions storage/framework/views storage/logs \
+    && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+
+COPY . .
+
+RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
+    && chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Runs the queue worker as a long-lived process. --max-time=3600 restarts the
+# worker every hour to prevent memory leaks. --tries=3 retries failed jobs.
+CMD ["sh", "-c", "\
+    php artisan config:cache && \
+    exec php artisan queue:work --verbose --tries=3 --timeout=90 --sleep=3 --max-time=3600 \
+"]
