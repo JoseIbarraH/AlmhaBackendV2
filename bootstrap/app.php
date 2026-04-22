@@ -26,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Admin/Team/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Audit/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Trash/Infrastructure/routes/api.php');
-                    require base_path('src/Landing/Subscription/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Design/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Analytics/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Settings/Infrastructure/Routes/api.php');
@@ -48,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Landing/ContactData/Infrastructure/Routes/api.php');
                     require base_path('src/Landing/Navbar/Infrastructure/Routes/api.php');
                     require base_path('src/Landing/Home/Infrastructure/Routes/api.php');
-                    require base_path('src/Landing/Subscribe/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Subscription/Infrastructure/Routes/api.php');
                 });
         },
     )
