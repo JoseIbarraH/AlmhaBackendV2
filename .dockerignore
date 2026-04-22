@@ -1,0 +1,48 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Dependencies (installed inside the image)
+vendor
+node_modules
+
+# Environment files — injected by Dokploy at runtime
+.env
+.env.local
+.env.*.local
+
+# Local dev artifacts
+storage/logs/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+bootstrap/cache/*.php
+*.sqlite
+*.sqlite-journal
+
+# IDE / OS
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Tests & tooling artifacts
+.phpunit.cache
+.phpunit.result.cache
+coverage
+phpstan.neon.cache
+
+# Docs / meta
+README.md
+*.md
+docs
+
+# Docker files themselves (keep the image small; the build context is the rest)
+docker-compose*.yml
+Dockerfile.dev
+
+# Keep these (explicit allow for required dotfiles)
+!.env.example

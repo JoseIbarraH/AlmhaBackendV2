@@ -136,3 +136,93 @@ Con esto, todos los endpoints `/api/client/*` retornan contenido real y el front
 2. Frontend: en `AlmhaFrontendClient/.env` establecer `PUBLIC_API_URL=http://localhost:8000`, luego `npm run dev`
 3. El middleware del frontend (`src/middleware.ts`) hace una petición SSR a `/api/client/maintenance` en cada request — el backend debe estar corriendo o verás errores 503 de mantenimiento.
 
+---
+
+## 🐳 Despliegue con Docker / Dokploy
+
+El proyecto incluye un `Dockerfile` multi-stage y configuraciones en `docker/` listas para deployar a Dokploy (o cualquier host Docker detrás de un reverse proxy que termine TLS).
+
+### Qué hay dentro del container
+Un solo container con **nginx + php-fpm + queue worker** gestionados por supervisor:
+- `nginx` sirve HTTP en el puerto **80** (Dokploy/Traefik termina TLS al frente)
+- `php-fpm` procesa las peticiones PHP
+- `queue:work` procesa los jobs dispatcheados (webhooks n8n, emails, etc.)
+- `entrypoint.sh` al arrancar: genera `APP_KEY` si falta, corre `migrate --force`, cachea config/routes/views, y crea el storage symlink
+
+### Build + run local
+
+```bash
+docker build -t almha-backend .
+docker run -p 8000:80 --env-file .env almha-backend
+```
+
+Luego `http://localhost:8000/up` → debe responder con el health check de Laravel.
+
+### Variables de entorno críticas en Dokploy
+
+| Variable | Ejemplo | Notas |
+|----------|---------|-------|
+| `APP_KEY` | `base64:...` | Genera una con `php artisan key:generate --show` y pégala en Dokploy. **Obligatoria**: si cambia, los tokens JWT existentes se invalidan. |
+| `APP_ENV` | `production` | |
+| `APP_DEBUG` | `false` | **Nunca** `true` en producción. |
+| `APP_URL` | `https://api.tu-dominio.com` | Usado para construir el link de confirmación de suscripción. |
+| `FRONTEND_URL` | `https://tu-dominio.com` | Redirect después de confirmar suscripción. |
+| `ALLOWED_ORIGINS` | `https://tu-dominio.com` | CORS. Múltiples separadas por coma. |
+| `DB_CONNECTION` | `mysql` o `pgsql` | |
+| `DB_HOST` / `DB_PORT` / `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` | — | Si usas un servicio de BD aparte en Dokploy, apunta al nombre del service. |
+| `QUEUE_CONNECTION` | `database` o `redis` | Database funciona; Redis escala mejor si tienes mucho volumen. |
+| `CACHE_STORE` | `database` o `redis` | |
+| `JWT_SECRET` | — | Genera con `php artisan jwt:secret --show`. |
+| `N8N_WEBHOOK_URL` / `N8N_CONTACT_WEBHOOK_URL` / `N8N_CHAT_WEBHOOK_URL` / `N8N_AUTH_TOKEN` | — | Solo si usas las integraciones de n8n. |
+
+### Pasos en Dokploy
+
+1. **Create App** → selecciona el repo Git
+2. **Build Type**: Dockerfile (ruta `./Dockerfile`)
+3. **Environment**: pega las variables de arriba (Dokploy tiene la UI para esto)
+4. **Domain**: asigna tu dominio; Dokploy pedirá cert Let's Encrypt automático
+5. **Port**: `80` (el que expone el container)
+6. **Deploy**
+
+Dokploy ejecuta `docker build` desde el repo, arranca el container, y Traefik le manda tráfico HTTPS.
+
+### Persistencia (importante)
+
+Por defecto el container **no persiste nada**: si lo reinicias, pierdes:
+- `storage/app/public/*` — imágenes subidas desde el admin (blog, procedures, team)
+- `storage/logs/*.log` — logs históricos
+
+En Dokploy crea **volumes** mapeando:
+- `/var/www/html/storage/app/public` → volume `almha-storage`
+- (Opcional) `/var/www/html/storage/logs` → volume `almha-logs`
+
+Si usas S3 para imágenes (ya tienes `league/flysystem-aws-s3-v3` en `composer.json`), set `FILESYSTEM_DISK=s3` y no necesitas el primer volume.
+
+### Archivos de credenciales Google (Translate + Analytics)
+
+Si usas Google Cloud, los JSON de credenciales deben ir en `storage/app/private/`. En Dokploy:
+- Opción A: monta el volumen de storage y copia los JSON dentro (persistente)
+- Opción B: sube cada credencial como "Secret File" en la UI de Dokploy y mapealas
+
+### Queue worker fuera del container (opcional, recomendado para producción)
+
+El Dockerfile actual corre el queue worker en el mismo container que nginx. Para más escala, puedes correr un **segundo servicio en Dokploy** con el mismo Dockerfile pero comando custom:
+
+```
+php artisan queue:work --tries=3 --max-time=3600
+```
+
+Así escalás workers independientemente del tráfico HTTP. Si lo haces, puedes comentar la sección `[program:queue-worker]` en `docker/supervisord.conf`.
+
+### Verificación post-deploy
+
+```bash
+# Health check (ruta nativa de Laravel)
+curl https://api.tu-dominio.com/up
+
+# Smoke test de un endpoint cliente
+curl https://api.tu-dominio.com/api/client/maintenance
+```
+
+Si ves `{"success":true,...}`, el deploy está sano.
+
