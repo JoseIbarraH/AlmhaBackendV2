@@ -18,11 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(function () {
 
                     // Modulo de Users
-                    require base_path('src/admin/User/Infrastructure/routes/api.php');
+                    require base_path('src/Admin/User/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Auth/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Role/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Blog/Infrastructure/routes/api.php');
-                    require base_path('src/Admin/Procedure/Infrastructure/routes/api.php');
+                    require base_path('src/Admin/Procedure/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Team/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Audit/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Trash/Infrastructure/routes/api.php');
