@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Src\Admin\Blog\Application\CreateBlogUseCase;
 use Src\Admin\Blog\Domain\Contracts\BlogRepositoryContract;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 use Src\Shared\Infrastructure\Traits\StoresImages;
 use Exception;
 
@@ -102,14 +103,9 @@ final class CreateBlogController
                 $this->repository->updateImage($blogId, $imageUrl);
             }
 
-            return response()->json([
-                'message' => 'Blog created successfully',
-                'blogId' => $blogId,
-            ], 201);
+            return ApiResponse::created(['blogId' => $blogId], 'Blog created successfully');
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 400);
+            return ApiResponse::error('server_error', $e->getMessage());
         }
     }
 }

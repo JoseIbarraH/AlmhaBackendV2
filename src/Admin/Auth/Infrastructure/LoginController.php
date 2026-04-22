@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Src\Admin\Auth\Application\LoginUseCase;
 use Src\Admin\Auth\Domain\Exceptions\InvalidCredentialsException;
 
+use Src\Shared\Infrastructure\Http\ApiResponse;
 use OpenApi\Attributes as OA;
 
 class LoginController extends Controller
@@ -67,18 +68,13 @@ class LoginController extends Controller
             return response()->json([
                 'access_token' => $authToken->value(),
                 'token_type' => 'bearer',
-                'expires_in' => $rememberMe ? 43200 * 60 : config('jwt.ttl', 60) * 60
-            ], 200);
-            
+                'expires_in' => $rememberMe ? 43200 * 60 : config('jwt.ttl', 60) * 60,
+            ]);
+
         } catch (\Src\Admin\Auth\Domain\Exceptions\EmailNotVerifiedException $e) {
-            return response()->json([
-                'error' => 'not_verified',
-                'message' => $e->getMessage()
-            ], 403);
+            return ApiResponse::error('not_verified', $e->getMessage(), 403);
         } catch (InvalidCredentialsException $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 401);
+            return ApiResponse::error('invalid_credentials', $e->getMessage(), 401);
         }
     }
 }

@@ -7,12 +7,16 @@ namespace Src\Admin\Procedure\Infrastructure\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Src\Admin\Procedure\Application\GetAllProceduresUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
+use Src\Shared\Infrastructure\Http\ValidatesPagination;
 use Exception;
 
 use OpenApi\Attributes as OA;
 
 final class GetAllProceduresController
 {
+    use ValidatesPagination;
+
     private GetAllProceduresUseCase $useCase;
 
     public function __construct(GetAllProceduresUseCase $useCase)
@@ -57,19 +61,14 @@ final class GetAllProceduresController
     {
         $lang = $request->header('Accept-Language', 'es');
         try {
-            $page = (int) $request->query('page', '1');
-            $perPage = (int) $request->query('per_page', '15');
+            [$page, $perPage] = $this->getPaginationParams($request);
             $search = $request->query('search');
             $status = $request->query('status');
             $procedures = $this->useCase->execute($lang, $page, $perPage, $search, $status);
-            return response()->json([
-                'data' => $procedures['items'],
-                'meta' => $procedures['meta']
-            ]);
+
+            return ApiResponse::paginated($procedures);
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 400);
+            return ApiResponse::error('server_error', $e->getMessage());
         }
     }
 }

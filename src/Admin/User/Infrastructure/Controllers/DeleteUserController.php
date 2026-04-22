@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Src\Admin\User\Application\DeleteUserUseCase;
 use Src\Admin\User\Domain\Exceptions\UserNotFoundException;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 
 use OpenApi\Attributes as OA;
 
@@ -46,14 +47,9 @@ class DeleteUserController extends Controller
         try {
             $this->useCase->execute($id);
 
-            return response()->json([
-                'message' => 'Usuario eliminado correctamente'
-            ], 200);
-            
+            return ApiResponse::success(message: 'Usuario eliminado correctamente');
         } catch (UserNotFoundException $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 404);
+            return ApiResponse::error('not_found', $e->getMessage(), 404);
         }
     }
 }

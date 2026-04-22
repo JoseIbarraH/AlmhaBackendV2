@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -29,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Admin/Design/Infrastructure/Routes/api.php');
                     require base_path('src/Admin/Analytics/Infrastructure/routes/api.php');
                     require base_path('src/Admin/Settings/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Contact/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Chat/Infrastructure/Routes/api.php');
 
                     // Setup Inicial
                     require base_path('src/Admin/User/Infrastructure/routes/instance_setup.php');
@@ -37,6 +40,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => null);
+
+        $middleware->api(prepend: [
+            HandleCors::class,
+        ]);
 
         $middleware->api(append: [
             \Src\Shared\Infrastructure\Middleware\AuditLogMiddleware::class,
@@ -49,16 +56,44 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Personalizar respuesta de error de autenticación
         $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
+                    'error' => 'unauthenticated',
                     'message' => 'No autorizado.',
                 ], 401);
             }
         });
 
-        // Esto detecta si la petición falló y fuerza la respuesta JSON
+        $exceptions->render(function (\Illuminate\Validation\ValidationException $e, $request) {
+            return response()->json([
+                'error' => 'validation_error',
+                'message' => 'Los datos proporcionados no son válidos.',
+                'errors' => $e->errors(),
+            ], 422);
+        });
+
+        $exceptions->render(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
+            return response()->json([
+                'error' => 'not_found',
+                'message' => 'Recurso no encontrado.',
+            ], 404);
+        });
+
+        $exceptions->render(function (\Illuminate\Auth\Access\AuthorizationException $e, $request) {
+            return response()->json([
+                'error' => 'forbidden',
+                'message' => 'No tienes permiso para realizar esta acción.',
+            ], 403);
+        });
+
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e, $request) {
+            return response()->json([
+                'error' => 'forbidden',
+                'message' => 'No tienes permiso para realizar esta acción.',
+            ], 403);
+        });
+
         $exceptions->shouldRenderJsonWhen(function ($request, $e) {
             return true;
         });

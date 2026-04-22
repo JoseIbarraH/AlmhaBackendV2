@@ -38,6 +38,8 @@ return [
     'n8n' => [
         'webhook_url' => env('N8N_WEBHOOK_URL'),
         'user_verification_webhook_url' => env('N8N_USER_VERIFICATION_WEBHOOK_URL'),
+        'contact_webhook_url' => env('N8N_CONTACT_WEBHOOK_URL'),
+        'chat_webhook_url' => env('N8N_CHAT_WEBHOOK_URL'),
         'auth_token' => env('N8N_AUTH_TOKEN'),
     ],
 

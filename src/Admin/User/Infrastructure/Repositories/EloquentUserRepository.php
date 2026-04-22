@@ -20,12 +20,8 @@ use Illuminate\Support\Facades\DB;
 
 final class EloquentUserRepository implements UserRepositoryContract
 {
-    private $eloquentUserModel;
+    public function __construct(private EloquentUserModel $eloquentUserModel) {}
 
-    public function __construct()
-    {
-        $this->eloquentUserModel = new EloquentUserModel;
-    }
 
     public function save(User $user): void
     {

@@ -93,6 +93,7 @@ final class EloquentProcedureCategoryRepository implements ProcedureCategoryRepo
     public function update(ProcedureCategory $category): void
     {
         DB::transaction(function () use ($category) {
+            /** @var ProcedureCategoryEloquentModel|null $eloquentCategory */
             $eloquentCategory = $this->model->find($category->id());
             if ($eloquentCategory) {
                 $eloquentCategory->update([
@@ -114,6 +115,7 @@ final class EloquentProcedureCategoryRepository implements ProcedureCategoryRepo
     public function delete(int $id): void
     {
         DB::transaction(function () use ($id) {
+            /** @var ProcedureCategoryEloquentModel|null $eloquentCategory */
             $eloquentCategory = $this->model->find($id);
             if ($eloquentCategory) {
                 $eloquentCategory->translations()->delete();

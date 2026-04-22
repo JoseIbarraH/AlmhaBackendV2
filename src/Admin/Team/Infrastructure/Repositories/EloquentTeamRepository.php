@@ -77,6 +77,7 @@ final class EloquentTeamRepository implements TeamRepositoryContract
 
     public function delete(int $id): void
     {
+        /** @var TeamEloquentModel|null $eloquentTeam */
         $eloquentTeam = $this->model->find($id);
         if ($eloquentTeam) {
             $eloquentTeam->delete();
@@ -105,6 +106,7 @@ final class EloquentTeamRepository implements TeamRepositoryContract
         }
 
         DB::transaction(function () use ($team) {
+            /** @var TeamEloquentModel|null $eloquentTeam */
             $eloquentTeam = $this->model->find($team->id());
 
             if ($eloquentTeam) {
@@ -145,6 +147,7 @@ final class EloquentTeamRepository implements TeamRepositoryContract
 
     public function updateImage(int $id, string $imageUrl): void
     {
+        /** @var TeamEloquentModel|null $eloquentTeam */
         $eloquentTeam = $this->model->find($id);
         if ($eloquentTeam) {
             $eloquentTeam->update(['image' => $imageUrl]);

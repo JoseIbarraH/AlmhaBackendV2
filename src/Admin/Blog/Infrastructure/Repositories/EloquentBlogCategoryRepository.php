@@ -89,6 +89,7 @@ final class EloquentBlogCategoryRepository implements BlogCategoryRepositoryCont
     public function update(BlogCategory $category): void
     {
         DB::transaction(function () use ($category) {
+            /** @var BlogCategoryEloquentModel|null $eloquentCategory */
             $eloquentCategory = $this->model->find($category->id());
             if ($eloquentCategory) {
                 $eloquentCategory->update([
@@ -110,6 +111,7 @@ final class EloquentBlogCategoryRepository implements BlogCategoryRepositoryCont
     public function delete(int $id): void
     {
         DB::transaction(function () use ($id) {
+            /** @var BlogCategoryEloquentModel|null $eloquentCategory */
             $eloquentCategory = $this->model->find($id);
             if ($eloquentCategory) {
                 $eloquentCategory->translations()->delete();

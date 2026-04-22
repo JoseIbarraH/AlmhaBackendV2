@@ -6,11 +6,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\User\Application\GetAllUsersUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
+use Src\Shared\Infrastructure\Http\ValidatesPagination;
 
 use OpenApi\Attributes as OA;
 
 class GetAllUsersController extends Controller
 {
+    use ValidatesPagination;
+
     private GetAllUsersUseCase $useCase;
 
     public function __construct(GetAllUsersUseCase $useCase)
@@ -34,14 +38,10 @@ class GetAllUsersController extends Controller
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $page = (int) $request->query('page', '1');
-        $perPage = (int) $request->query('per_page', '15');
+        [$page, $perPage] = $this->getPaginationParams($request);
 
         $result = $this->useCase->execute($page, $perPage);
 
-        return response()->json([
-            'data' => $result['items'],
-            'meta' => $result['meta']
-        ], 200);
+        return ApiResponse::paginated($result);
     }
 }

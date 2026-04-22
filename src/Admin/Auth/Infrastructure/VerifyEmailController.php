@@ -33,7 +33,7 @@ final class VerifyEmailController
         $user = $this->repository->findByToken($token);
 
         if (!$user) {
-            return response()->json(['message' => 'Token de verificación inválido.'], 400);
+            return response()->json(['error' => 'not_found', 'message' => 'Token de verificación inválido.'], 404);
         }
 
         if ($user->emailVerifiedDate()->value() !== null) {

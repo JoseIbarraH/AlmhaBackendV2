@@ -6,7 +6,7 @@ namespace Src\Admin\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Src\Admin\Blog\Application\DeleteBlogUseCase;
-use Exception;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 
 use OpenApi\Attributes as OA;
 
@@ -44,16 +44,8 @@ final class DeleteBlogController
     )]
     public function __invoke(int $id): JsonResponse
     {
-        try {
-            $this->useCase->execute($id);
+        $this->useCase->execute($id);
 
-            return response()->json([
-                'message' => 'Blog deleted successfully',
-            ], 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 400);
-        }
+        return ApiResponse::success(message: 'Blog deleted successfully');
     }
 }

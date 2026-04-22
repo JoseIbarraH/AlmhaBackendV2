@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\User\Application\UpdateUserUseCase;
 use Src\Admin\User\Domain\Exceptions\UserNotFoundException;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 
 use OpenApi\Attributes as OA;
 
@@ -83,14 +84,9 @@ class UpdateUserController extends Controller
                 $request->input('roles', [])
             );
             
-            return response()->json([
-                'message' => 'Usuario actualizado exitosamente'
-            ], 200);
-            
+            return ApiResponse::success(message: 'Usuario actualizado exitosamente');
         } catch (UserNotFoundException $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 404);
+            return ApiResponse::error('not_found', $e->getMessage(), 404);
         }
     }
 }

@@ -7,10 +7,14 @@ namespace Src\Admin\Audit\Infrastructure\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\Audit\Application\GetAuditsUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
+use Src\Shared\Infrastructure\Http\ValidatesPagination;
 use OpenApi\Attributes as OA;
 
 final class GetAuditsController
 {
+    use ValidatesPagination;
+
     private GetAuditsUseCase $useCase;
 
     public function __construct(GetAuditsUseCase $useCase)
@@ -34,14 +38,10 @@ final class GetAuditsController
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $page = (int) $request->query('page', '1');
-        $perPage = (int) $request->query('per_page', '15');
-        
+        [$page, $perPage] = $this->getPaginationParams($request);
+
         $audits = $this->useCase->execute($page, $perPage);
 
-        return response()->json([
-            'data' => $audits['items'],
-            'meta' => $audits['meta'],
-        ], 200);
+        return ApiResponse::paginated($audits);
     }
 }

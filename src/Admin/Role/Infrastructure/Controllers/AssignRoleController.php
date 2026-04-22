@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\Role\Application\AssignRoleToUserUseCase;
 use Src\Admin\Role\Domain\Exceptions\RoleNotFoundException;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 
 use OpenApi\Attributes as OA;
 
@@ -56,14 +57,9 @@ class AssignRoleController extends Controller
                 $request->input('role_name')
             );
             
-            return response()->json([
-                'message' => 'Rol asignado correctamente'
-            ], 200);
-            
+            return ApiResponse::success(message: 'Rol asignado correctamente');
         } catch (RoleNotFoundException $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 404);
+            return ApiResponse::error('not_found', $e->getMessage(), 404);
         }
     }
 }

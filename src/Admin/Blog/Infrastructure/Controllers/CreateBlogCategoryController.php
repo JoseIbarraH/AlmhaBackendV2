@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Src\Admin\Blog\Application\CreateBlogCategoryUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 use Exception;
 
 use OpenApi\Attributes as OA;
@@ -69,13 +70,9 @@ final class CreateBlogCategoryController
                 $targetLanguages
             );
 
-            return response()->json([
-                'message' => 'Blog category created successfully',
-            ], 201);
+            return ApiResponse::created(message: 'Blog category created successfully');
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 400);
+            return ApiResponse::error('server_error', $e->getMessage());
         }
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -43,7 +46,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(
             \Src\Admin\User\Domain\Contracts\UserRepositoryContract::class,
-            \Src\Admin\User\Infrastructure\Repositories\EloquentUserRepository::class
+            fn () => new \Src\Admin\User\Infrastructure\Repositories\EloquentUserRepository(
+                new \App\Models\User()
+            )
         );
 
         $this->app->bind(
@@ -97,6 +102,40 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(5)
+                ->by($request->input('email', '') . '|' . $request->ip())
+                ->response(fn () => response()->json([
+                    'error' => 'too_many_attempts',
+                    'message' => 'Demasiados intentos. Intenta de nuevo en 1 minuto.',
+                ], 429));
+        });
+
+        RateLimiter::for('auth_resend', function (Request $request) {
+            return Limit::perMinute(3)
+                ->by($request->input('email', '') . '|' . $request->ip())
+                ->response(fn () => response()->json([
+                    'error' => 'too_many_attempts',
+                    'message' => 'Demasiados intentos. Intenta de nuevo en 1 minuto.',
+                ], 429));
+        });
+
+        RateLimiter::for('contact', function (Request $request) {
+            return Limit::perMinute(5)
+                ->by($request->ip())
+                ->response(fn () => response()->json([
+                    'error' => 'too_many_attempts',
+                    'message' => 'Has enviado demasiados mensajes. Intenta de nuevo en 1 minuto.',
+                ], 429));
+        });
+
+        RateLimiter::for('chat', function (Request $request) {
+            return Limit::perMinute(30)
+                ->by($request->ip())
+                ->response(fn () => response()->json([
+                    'error' => 'too_many_attempts',
+                    'message' => 'Demasiados mensajes en poco tiempo. Espera un momento.',
+                ], 429));
+        });
     }
 }

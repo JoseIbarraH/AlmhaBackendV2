@@ -7,11 +7,15 @@ namespace Src\Admin\Team\Infrastructure\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\Team\Application\GetAllTeamsUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
+use Src\Shared\Infrastructure\Http\ValidatesPagination;
 
 use OpenApi\Attributes as OA;
 
 final class GetAllTeamsController
 {
+    use ValidatesPagination;
+
     private GetAllTeamsUseCase $useCase;
 
     public function __construct(GetAllTeamsUseCase $useCase)
@@ -35,14 +39,10 @@ final class GetAllTeamsController
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $page = (int) $request->query('page', '1');
-        $perPage = (int) $request->query('per_page', '15');
+        [$page, $perPage] = $this->getPaginationParams($request);
 
         $result = $this->useCase->execute($page, $perPage);
 
-        return response()->json([
-            'data' => $result['items'],
-            'meta' => $result['meta']
-        ], 200);
+        return ApiResponse::paginated($result);
     }
 }

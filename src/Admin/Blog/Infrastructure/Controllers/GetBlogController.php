@@ -7,6 +7,7 @@ namespace Src\Admin\Blog\Infrastructure\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Src\Admin\Blog\Application\GetBlogUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 use Exception;
 
 use OpenApi\Attributes as OA;
@@ -57,13 +58,9 @@ final class GetBlogController
             $lang = $request->header('Accept-Language', 'es');
             $blog = $this->useCase->execute($id, $lang);
             
-            return response()->json([
-                'data' => $blog
-            ], 200);
+            return ApiResponse::success($blog);
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 404);
+            return ApiResponse::error('not_found', $e->getMessage(), 404);
         }
     }
 }

@@ -7,12 +7,16 @@ namespace Src\Admin\Blog\Infrastructure\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Src\Admin\Blog\Application\GetAllBlogsUseCase;
+use Src\Shared\Infrastructure\Http\ApiResponse;
+use Src\Shared\Infrastructure\Http\ValidatesPagination;
 use Exception;
 
 use OpenApi\Attributes as OA;
 
 final class GetAllBlogsController
 {
+    use ValidatesPagination;
+
     private GetAllBlogsUseCase $useCase;
 
     public function __construct(GetAllBlogsUseCase $useCase)
@@ -54,20 +58,14 @@ final class GetAllBlogsController
     {
         try {
             $lang = $request->header('Accept-Language', 'es');
-            $page = (int) $request->query('page', '1');
-            $perPage = (int) $request->query('per_page', '15');
+            [$page, $perPage] = $this->getPaginationParams($request);
             $search = $request->query('search');
             $status = $request->query('status');
             $blogs = $this->useCase->execute($lang, $page, $perPage, $search, $status);
             
-            return response()->json([
-                'data' => $blogs['items'],
-                'meta' => $blogs['meta']
-            ], 200);
+            return ApiResponse::paginated($blogs);
         } catch (Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return ApiResponse::error('server_error', $e->getMessage(), 500);
         }
     }
 }

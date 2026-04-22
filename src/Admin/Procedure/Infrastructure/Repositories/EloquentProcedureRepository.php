@@ -142,108 +142,145 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
             return;
         }
 
-        DB::transaction(function () use ($procedure) {
-            $eloquentProcedure = $this->model->find($procedure->id());
+        DB::transaction(fn () => $this->doUpdate($procedure));
+    }
 
-            if ($eloquentProcedure) {
-                $eloquentProcedure->update([
-                    'user_id' => $procedure->userId(),
-                    'image' => $procedure->image(),
-                    'category_code' => $procedure->categoryCode(),
-                    'status' => $procedure->status(),
-                    'views' => $procedure->views(),
+    private function doUpdate(Procedure $procedure): void
+    {
+        /** @var ProcedureEloquentModel|null $eloquentProcedure */
+        $eloquentProcedure = $this->model->find($procedure->id());
+
+        if (!$eloquentProcedure) {
+            return;
+        }
+
+        $eloquentProcedure->update([
+            'user_id' => $procedure->userId(),
+            'image' => $procedure->image(),
+            'category_code' => $procedure->categoryCode(),
+            'status' => $procedure->status(),
+            'views' => $procedure->views(),
+        ]);
+
+        $this->clearRelations($eloquentProcedure);
+        $this->syncTranslations($eloquentProcedure, $procedure);
+        $this->syncSections($eloquentProcedure, $procedure);
+        $this->syncFaqs($eloquentProcedure, $procedure);
+        $this->syncPostoperativeInstructions($eloquentProcedure, $procedure);
+        $this->syncPreparationSteps($eloquentProcedure, $procedure);
+        $this->syncRecoveryPhases($eloquentProcedure, $procedure);
+        $this->syncGallery($eloquentProcedure, $procedure);
+    }
+
+    private function clearRelations(ProcedureEloquentModel $eloquentProcedure): void
+    {
+        $eloquentProcedure->translations()->delete();
+        $eloquentProcedure->sections()->delete();
+        $eloquentProcedure->faqs()->delete();
+        $eloquentProcedure->postoperativeInstructions()->delete();
+        $eloquentProcedure->preparationSteps()->delete();
+        $eloquentProcedure->recoveryPhases()->delete();
+        $eloquentProcedure->gallery()->delete();
+    }
+
+    private function syncTranslations(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->translations() as $t) {
+            $eloquentProcedure->translations()->create([
+                'lang' => $t->lang(),
+                'title' => $t->title(),
+                'subtitle' => $t->subtitle(),
+            ]);
+        }
+    }
+
+    private function syncSections(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->sections() as $s) {
+            $section = $eloquentProcedure->sections()->create([
+                'type' => $s->type(),
+                'image' => $s->image(),
+            ]);
+            foreach ($s->translations() as $st) {
+                $section->translations()->create([
+                    'lang' => $st->lang(),
+                    'title' => $st->title(),
+                    'content_one' => $st->contentOne(),
+                    'content_two' => $st->contentTwo(),
                 ]);
-
-                // Clear all components and recreate (simplest sync)
-                $eloquentProcedure->translations()->delete();
-                $eloquentProcedure->sections()->delete();
-                $eloquentProcedure->faqs()->delete();
-                $eloquentProcedure->postoperativeInstructions()->delete();
-                $eloquentProcedure->preparationSteps()->delete();
-                $eloquentProcedure->recoveryPhases()->delete();
-                $eloquentProcedure->gallery()->delete();
-
-                // Re-save everything (same logic as save)
-                foreach ($procedure->translations() as $t) {
-                    $eloquentProcedure->translations()->create([
-                        'lang' => $t->lang(),
-                        'title' => $t->title(),
-                        'subtitle' => $t->subtitle(),
-                    ]);
-                }
-
-                foreach ($procedure->sections() as $s) {
-                    $section = $eloquentProcedure->sections()->create([
-                        'type' => $s->type(),
-                        'image' => $s->image(),
-                    ]);
-                    foreach ($s->translations() as $st) {
-                        $section->translations()->create([
-                            'lang' => $st->lang(),
-                            'title' => $st->title(),
-                            'content_one' => $st->contentOne(),
-                            'content_two' => $st->contentTwo(),
-                        ]);
-                    }
-                }
-
-                foreach ($procedure->faqs() as $f) {
-                    $faq = $eloquentProcedure->faqs()->create(['order' => $f->order()]);
-                    foreach ($f->translations() as $ft) {
-                        $faq->translations()->create([
-                            'lang' => $ft->lang(),
-                            'question' => $ft->question(),
-                            'answer' => $ft->answer(),
-                        ]);
-                    }
-                }
-
-                foreach ($procedure->postoperativeInstructions() as $pi) {
-                    $instruction = $eloquentProcedure->postoperativeInstructions()->create([
-                        'type' => $pi->type(),
-                        'order' => $pi->order(),
-                    ]);
-                    foreach ($pi->translations() as $pit) {
-                        $instruction->translations()->create([
-                            'lang' => $pit->lang(),
-                            'content' => $pit->content(),
-                        ]);
-                    }
-                }
-
-                foreach ($procedure->preparationSteps() as $ps) {
-                    $step = $eloquentProcedure->preparationSteps()->create(['order' => $ps->order()]);
-                    foreach ($ps->translations() as $pst) {
-                        $step->translations()->create([
-                            'lang' => $pst->lang(),
-                            'title' => $pst->title(),
-                            'description' => $pst->description(),
-                        ]);
-                    }
-                }
-
-                foreach ($procedure->recoveryPhases() as $rp) {
-                    $phase = $eloquentProcedure->recoveryPhases()->create(['order' => $rp->order()]);
-                    foreach ($rp->translations() as $rpt) {
-                        $phase->translations()->create([
-                            'lang' => $rpt->lang(),
-                            'period' => $rpt->period(),
-                            'title' => $rpt->title(),
-                            'description' => $rpt->description(),
-                        ]);
-                    }
-                }
-
-                foreach ($procedure->gallery() as $g) {
-                    $eloquentProcedure->gallery()->create([
-                        'path' => $g->path(),
-                        'type' => $g->type(),
-                        'pair_id' => $g->pairId(),
-                        'order' => $g->order(),
-                    ]);
-                }
             }
-        });
+        }
+    }
+
+    private function syncFaqs(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->faqs() as $f) {
+            $faq = $eloquentProcedure->faqs()->create(['order' => $f->order()]);
+            foreach ($f->translations() as $ft) {
+                $faq->translations()->create([
+                    'lang' => $ft->lang(),
+                    'question' => $ft->question(),
+                    'answer' => $ft->answer(),
+                ]);
+            }
+        }
+    }
+
+    private function syncPostoperativeInstructions(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->postoperativeInstructions() as $pi) {
+            $instruction = $eloquentProcedure->postoperativeInstructions()->create([
+                'type' => $pi->type(),
+                'order' => $pi->order(),
+            ]);
+            foreach ($pi->translations() as $pit) {
+                $instruction->translations()->create([
+                    'lang' => $pit->lang(),
+                    'content' => $pit->content(),
+                ]);
+            }
+        }
+    }
+
+    private function syncPreparationSteps(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->preparationSteps() as $ps) {
+            $step = $eloquentProcedure->preparationSteps()->create(['order' => $ps->order()]);
+            foreach ($ps->translations() as $pst) {
+                $step->translations()->create([
+                    'lang' => $pst->lang(),
+                    'title' => $pst->title(),
+                    'description' => $pst->description(),
+                ]);
+            }
+        }
+    }
+
+    private function syncRecoveryPhases(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->recoveryPhases() as $rp) {
+            $phase = $eloquentProcedure->recoveryPhases()->create(['order' => $rp->order()]);
+            foreach ($rp->translations() as $rpt) {
+                $phase->translations()->create([
+                    'lang' => $rpt->lang(),
+                    'period' => $rpt->period(),
+                    'title' => $rpt->title(),
+                    'description' => $rpt->description(),
+                ]);
+            }
+        }
+    }
+
+    private function syncGallery(ProcedureEloquentModel $eloquentProcedure, Procedure $procedure): void
+    {
+        foreach ($procedure->gallery() as $g) {
+            $eloquentProcedure->gallery()->create([
+                'path' => $g->path(),
+                'type' => $g->type(),
+                'pair_id' => $g->pairId(),
+                'order' => $g->order(),
+            ]);
+        }
     }
 
     public function findById(int $id, ?string $lang = null): ?Procedure
@@ -300,6 +337,7 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
 
     public function updateImage(int $id, string $imagePath): void
     {
+        /** @var ProcedureEloquentModel|null $eloquentProcedure */
         $eloquentProcedure = $this->model->find($id);
         if ($eloquentProcedure) {
             $eloquentProcedure->update(['image' => $imagePath]);
@@ -308,6 +346,7 @@ final class EloquentProcedureRepository implements ProcedureRepositoryContract
 
     public function delete(int $id): void
     {
+        /** @var ProcedureEloquentModel|null $eloquentProcedure */
         $eloquentProcedure = $this->model->find($id);
         if ($eloquentProcedure) {
             $eloquentProcedure->delete();

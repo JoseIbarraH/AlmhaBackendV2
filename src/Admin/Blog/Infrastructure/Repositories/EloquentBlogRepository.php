@@ -53,6 +53,7 @@ final class EloquentBlogRepository implements BlogRepositoryContract
 
     public function updateImage(int $id, string $imagePath): void
     {
+        /** @var BlogEloquentModel|null $eloquentBlog */
         $eloquentBlog = $this->model->find($id);
         if ($eloquentBlog) {
             $eloquentBlog->update(['image' => $imagePath]);
@@ -99,6 +100,7 @@ final class EloquentBlogRepository implements BlogRepositoryContract
         }
 
         DB::transaction(function () use ($blog) {
+            /** @var BlogEloquentModel|null $eloquentBlog */
             $eloquentBlog = $this->model->find($blog->id());
             
             if ($eloquentBlog) {
@@ -128,10 +130,7 @@ final class EloquentBlogRepository implements BlogRepositoryContract
 
     public function delete(int $id): void
     {
-        $eloquentBlog = $this->model->find($id);
-        if ($eloquentBlog) {
-            $eloquentBlog->delete();
-        }
+        $this->model->findOrFail($id)->delete();
     }
 
     public function getAll(int $page = 1, int $perPage = 15, ?string $search = null, ?string $status = null): array

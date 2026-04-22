@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm i *)",
+      "Bash(npm run *)",
+      "Bash(./node_modules/.bin/astro check *)",
+      "Bash(npm test *)",
+      "Bash(php artisan *)"
+    ]
+  }
+}

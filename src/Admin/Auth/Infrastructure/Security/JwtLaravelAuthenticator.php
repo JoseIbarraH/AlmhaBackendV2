@@ -3,6 +3,7 @@
 namespace Src\Admin\Auth\Infrastructure\Security;
 
 use Illuminate\Support\Facades\Auth;
+use PHPOpenSourceSaver\JWTAuth\JWTGuard;
 use Src\Admin\Auth\Domain\Contracts\AuthenticatorContract;
 use Src\Admin\Auth\Domain\Exceptions\InvalidCredentialsException;
 use Src\Admin\Auth\Domain\ValueObjects\AuthToken;
@@ -21,13 +22,15 @@ class JwtLaravelAuthenticator implements AuthenticatorContract
             config(['jwt.ttl' => 43200]);
         }
 
-        $token = Auth::guard('api')->attempt($credentials);
+        /** @var JWTGuard $guard */
+        $guard = Auth::guard('api');
+        $token = $guard->attempt($credentials);
 
         if (!$token) {
             throw new InvalidCredentialsException();
         }
 
-        $user = Auth::guard('api')->user();
+        $user = $guard->user();
         if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail()) {
             throw new \Src\Admin\Auth\Domain\Exceptions\EmailNotVerifiedException();
         }
@@ -37,7 +40,9 @@ class JwtLaravelAuthenticator implements AuthenticatorContract
 
     public function refresh(): AuthToken
     {
-        $token = Auth::guard('api')->refresh();
+        /** @var JWTGuard $guard */
+        $guard = Auth::guard('api');
+        $token = $guard->refresh();
 
         return new AuthToken($token);
     }

@@ -9,18 +9,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Src\Admin\User\Application\CreateUserUseCase;
 use Src\Admin\User\Application\GetUserByCriteriaUseCase;
-use Src\Admin\User\Infrastructure\Repositories\EloquentUserRepository;
+use Src\Shared\Infrastructure\Http\ApiResponse;
 
 use OpenApi\Attributes as OA;
 
 final class CreateUserController
 {
-    private $repository;
+    public function __construct(
+        private CreateUserUseCase $createUserUseCase,
+        private GetUserByCriteriaUseCase $getUserByCriteriaUseCase,
+    ) {}
 
-    public function __construct(EloquentUserRepository $repository)
-    {
-        $this->repository = $repository;
-    }
 
     #[OA\Post(
         path: "/users",
@@ -55,6 +54,15 @@ final class CreateUserController
     )]
     public function __invoke(Request $request)
     {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:4',
+            'is_active' => 'nullable|boolean',
+            'roles'    => 'nullable|array',
+            'roles.*'  => 'string|exists:roles,name',
+        ]);
+
         $userName = $request->input('name');
         $userEmail = $request->input('email');
         $userEmailVerifiedDate = null;
@@ -63,8 +71,7 @@ final class CreateUserController
         $isActive = $request->input('is_active', true);
         $roles = $request->input('roles', []);
 
-        $createUserUseCase = new CreateUserUseCase($this->repository);
-        $createUserUseCase->__invoke(
+        ($this->createUserUseCase)(
             $userName,
             $userEmail,
             $userEmailVerifiedDate,
@@ -74,10 +81,9 @@ final class CreateUserController
             $roles
         );
 
-        $getUserByCriteriaUseCase = new GetUserByCriteriaUseCase($this->repository);
-        $matchedUsers = $getUserByCriteriaUseCase->execute(null, $userName, $userEmail);
+        $matchedUsers = $this->getUserByCriteriaUseCase->execute(null, $userName, $userEmail);
         $newUser = count($matchedUsers) > 0 ? $matchedUsers[0] : null;
 
-        return response()->json(new UserResource($newUser), 201);
+        return ApiResponse::created(new UserResource($newUser));
     }
 }
