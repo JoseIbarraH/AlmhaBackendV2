@@ -21,7 +21,8 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             BlogTestSeeder::class,
             DesignModuleSeeder::class,
-            SettingsSeeder::class
+            SettingsSeeder::class,
+            ClientDataSeeder::class,
         ]);
     }
 }

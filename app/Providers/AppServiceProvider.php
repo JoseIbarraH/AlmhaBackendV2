@@ -137,5 +137,60 @@ class AppServiceProvider extends ServiceProvider
                     'message' => 'Demasiados mensajes en poco tiempo. Espera un momento.',
                 ], 429));
         });
+
+        $this->registerClientCacheInvalidation();
+    }
+
+    /**
+     * Wire Eloquent model events to flush /api/client/* cache groups when admin
+     * data changes, so the public site reflects edits without manual cache flushes.
+     */
+    private function registerClientCacheInvalidation(): void
+    {
+        // Map: ModelClass => [cache groups to flush on save/delete]
+        $invalidations = [
+            // Blog
+            \Src\Admin\Blog\Infrastructure\Models\BlogEloquentModel::class                  => ['blog'],
+            \Src\Admin\Blog\Infrastructure\Models\BlogTranslationEloquentModel::class       => ['blog'],
+            \Src\Admin\Blog\Infrastructure\Models\BlogCategoryEloquentModel::class          => ['blog'],
+            \Src\Admin\Blog\Infrastructure\Models\BlogCategoryTranslationEloquentModel::class => ['blog'],
+
+            // Procedure (also affects navbar, home, contact_data)
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel::class                          => ['procedure', 'navbar', 'contact_data'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureTranslationEloquentModel::class               => ['procedure', 'navbar', 'contact_data'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureCategoryEloquentModel::class                  => ['procedure', 'navbar'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureCategoryTranslationEloquentModel::class       => ['procedure', 'navbar'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureSectionEloquentModel::class                   => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureSectionTranslationEloquentModel::class        => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureFaqEloquentModel::class                       => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureFaqTranslationEloquentModel::class            => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedurePostoperativeInstructionEloquentModel::class            => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedurePostoperativeInstructionTranslationEloquentModel::class => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedurePreparationStepEloquentModel::class            => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedurePreparationStepTranslationEloquentModel::class => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureRecoveryPhaseEloquentModel::class              => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureRecoveryPhaseTranslationEloquentModel::class   => ['procedure'],
+            \Src\Admin\Procedure\Infrastructure\Models\ProcedureResultGalleryEloquentModel::class              => ['procedure'],
+
+            // Team / Member
+            \Src\Admin\Team\Infrastructure\Models\TeamEloquentModel::class                  => ['member'],
+            \Src\Admin\Team\Infrastructure\Models\TeamTranslationEloquentModel::class       => ['member'],
+            \Src\Admin\Team\Infrastructure\Models\TeamImageEloquentModel::class             => ['member'],
+            \Src\Admin\Team\Infrastructure\Models\TeamImageTranslationEloquentModel::class  => ['member'],
+
+            // Settings (touch maintenance, navbar, contact_data)
+            \Src\Admin\Settings\Infrastructure\Models\EloquentSettingModel::class => ['maintenance', 'navbar', 'contact_data'],
+
+            // Design (touch navbar + home)
+            \Src\Admin\Design\Infrastructure\Models\EloquentDesignModel::class                 => ['navbar', 'home'],
+            \Src\Admin\Design\Infrastructure\Models\EloquentDesignItemModel::class             => ['navbar', 'home'],
+            \Src\Admin\Design\Infrastructure\Models\EloquentDesignItemTranslationModel::class  => ['navbar', 'home'],
+        ];
+
+        foreach ($invalidations as $modelClass => $groups) {
+            $flush = static fn () => \Src\Shared\Infrastructure\Cache\ClientCache::flushGroups(...$groups);
+            $modelClass::saved($flush);
+            $modelClass::deleted($flush);
+        }
     }
 }

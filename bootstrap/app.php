@@ -36,6 +36,20 @@ return Application::configure(basePath: dirname(__DIR__))
                     // Setup Inicial
                     require base_path('src/Admin/User/Infrastructure/routes/instance_setup.php');
                 });
+
+            // Public client-facing read endpoints consumed by AlmhaFrontendClient
+            Route::middleware('api')
+                ->prefix('api/client')
+                ->group(function () {
+                    require base_path('src/Landing/Maintenance/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Blog/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Procedure/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Member/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/ContactData/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Navbar/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Home/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/Subscribe/Infrastructure/Routes/api.php');
+                });
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

@@ -82,3 +82,57 @@ Authorization: Bearer <aquí-va-el-token>
 Accept: application/json
 ```
 
+---
+
+## 🌐 Endpoints públicos para el frontend (`/api/client/*`)
+
+El módulo `src/Landing/*` expone endpoints públicos de solo lectura consumidos por **AlmhaFrontendClient** (Astro). Todos devuelven el envelope `{ success, message, data }` y respetan el header `Accept-Language` (ES/EN).
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET /api/client/maintenance` | Flag de modo mantenimiento |
+| `GET /api/client/navbar-data` | Carousel + procedimientos agrupados + redes + contacto |
+| `GET /api/client/home` | Backgrounds + carousels + bloque video de la home |
+| `GET /api/client/contact-data?lang=es` | Settings de contacto y títulos de procedimientos |
+| `GET /api/client/blog` | Listado paginado (`page`, `filter[category_code]`, `filter[search]`, `sort`) |
+| `GET /api/client/blog/{slug}` | Detalle + `random_blogs` |
+| `GET /api/client/procedure` | Listado paginado igual que blog |
+| `GET /api/client/procedure/{slug}` | Detalle con `section`, `preStep`, `phase`, `do`/`dont`, `faq`, `gallery`, WhatsApp |
+| `GET /api/client/members` | Listado del equipo (Team con `status=active`) |
+| `GET /api/client/members/{slug}` | Detalle del miembro + galería de resultados |
+| `POST /api/client/subscribe` | Newsletter (alias del `Landing/Subscription`) |
+
+### Proxies a n8n (también usados por el frontend)
+
+| Endpoint | Descripción | Rate limit |
+|----------|-------------|-----------|
+| `POST /api/v1/contact` | Formulario de contacto → n8n | 5 req/min/IP |
+| `POST /api/v1/chat` | Chat widget → n8n | 30 req/min/IP |
+
+Configurar en `.env`:
+```
+N8N_CONTACT_WEBHOOK_URL=https://...
+N8N_CHAT_WEBHOOK_URL=https://...
+```
+
+---
+
+## 🌱 Datos de prueba
+
+`php artisan migrate:fresh --seed` ejecuta `DatabaseSeeder` que corre:
+- `RolesAndPermissionsSeeder` — roles y permisos de Spatie
+- `BlogTestSeeder` — 2 blogs de ejemplo (`tech` category)
+- `DesignModuleSeeder` — 6 keys de diseño (`main_banner`, `background_1..3`, `brands_carousel`, `alternate_main_banner`)
+- `SettingsSeeder` — settings en grupos `general`, `social`, `system`
+- `ClientDataSeeder` — 3 procedimientos con secciones/FAQ/galería, 2 miembros del equipo, media poblada en los designs
+
+Con esto, todos los endpoints `/api/client/*` retornan contenido real y el frontend puede renderizar sin tocar el admin.
+
+---
+
+## 🔗 Corriendo junto con AlmhaFrontendClient
+
+1. Backend: `php artisan serve` (por defecto `http://localhost:8000`)
+2. Frontend: en `AlmhaFrontendClient/.env` establecer `PUBLIC_API_URL=http://localhost:8000`, luego `npm run dev`
+3. El middleware del frontend (`src/middleware.ts`) hace una petición SSR a `/api/client/maintenance` en cada request — el backend debe estar corriendo o verás errores 503 de mantenimiento.
+
