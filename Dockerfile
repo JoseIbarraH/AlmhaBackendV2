@@ -59,7 +59,7 @@ WORKDIR /var/www
 COPY composer.json composer.lock artisan ./
 
 RUN mkdir -p bootstrap/cache \
-        storage/app/public/images \
+        storage/app/private \
         storage/framework/cache/data \
         storage/framework/sessions \
         storage/framework/views \
@@ -75,7 +75,6 @@ RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
     && php artisan config:clear \
     && php artisan route:clear \
     && php artisan view:clear \
-    && php artisan storage:link || true \
     && chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 

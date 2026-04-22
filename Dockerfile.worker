@@ -34,7 +34,7 @@ WORKDIR /var/www
 
 COPY composer.json composer.lock artisan ./
 
-RUN mkdir -p bootstrap/cache storage/app storage/framework/cache/data \
+RUN mkdir -p bootstrap/cache storage/app/private storage/framework/cache/data \
         storage/framework/sessions storage/framework/views storage/logs \
     && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
