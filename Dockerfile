@@ -103,11 +103,12 @@ COPY --from=vendor /app /var/www/html
 
 # Copy infrastructure configs
 COPY docker/nginx.conf       /etc/nginx/http.d/default.conf
-COPY docker/php-fpm.conf     /usr/local/etc/php-fpm.d/zz-override.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 
-RUN chmod +x /usr/local/bin/entrypoint.sh \
+# Move php-fpm from default :9000 to :9001 so nginx can own :9000 externally.
+RUN sed -i 's|^listen = 9000|listen = 127.0.0.1:9001|' /usr/local/etc/php-fpm.d/www.conf \
+    && chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /run/nginx /var/log/supervisor \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwx storage bootstrap/cache
