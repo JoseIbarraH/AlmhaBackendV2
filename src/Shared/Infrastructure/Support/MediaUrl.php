@@ -30,7 +30,13 @@ final class MediaUrl
         }
 
         // Resolve via the default filesystem disk (typically s3 in prod).
-        return Storage::disk(config('filesystems.default'))->url(ltrim($path, '/'));
+        // Cast to the Cloud contract so static analysers know url() exists —
+        // the base Filesystem interface doesn't declare it, but every concrete
+        // adapter (s3, local public, etc.) does.
+        /** @var \Illuminate\Contracts\Filesystem\Cloud $disk */
+        $disk = Storage::disk(config('filesystems.default'));
+
+        return $disk->url(ltrim($path, '/'));
     }
 
     /**

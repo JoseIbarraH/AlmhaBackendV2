@@ -3,10 +3,20 @@
 namespace Src\Admin\Blog\Infrastructure\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
+/**
+ * @property int         $id
+ * @property int         $blog_id
+ * @property string      $lang
+ * @property string      $title
+ * @property string      $slug
+ * @property string|null $content
+ * @property BlogEloquentModel|null $blog
+ */
 class BlogTranslationEloquentModel extends Model
 {
     use HasSlug;
@@ -50,7 +60,7 @@ class BlogTranslationEloquentModel extends Model
         });
     }
 
-    public function blog()
+    public function blog(): BelongsTo
     {
         return $this->belongsTo(BlogEloquentModel::class, 'blog_id');
     }
