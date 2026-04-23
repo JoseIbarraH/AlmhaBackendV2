@@ -11,6 +11,7 @@ use Src\Admin\Settings\Infrastructure\Models\EloquentSettingModel;
 use Src\Landing\Navbar\Infrastructure\Support\DesignItemPresenter;
 use Src\Landing\Procedure\Infrastructure\Support\ProcedurePresenter;
 use Src\Shared\Infrastructure\Cache\ClientCache;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 use Src\Shared\Infrastructure\Http\ClientResponse;
 use Src\Shared\Infrastructure\Http\ResolvesLanguage;
 
@@ -50,7 +51,7 @@ final class GetNavbarDataController
 
             $grouped[$key][] = [
                 'id'       => $p->id,
-                'image'    => $p->image ?? '',
+                'image'    => MediaUrl::resolve($p->image),
                 'slug'     => $t?->slug ?? '',
                 'title'    => $t?->title ?? '',
                 'category' => $categoryTitle,
@@ -67,7 +68,7 @@ final class GetNavbarDataController
                 $t = $p->translations->first();
                 return [
                     'id'       => $p->id,
-                    'image'    => $p->image ?? '',
+                    'image'    => MediaUrl::resolve($p->image),
                     'slug'     => $t?->slug ?? '',
                     'title'    => $t?->title ?? '',
                     'category' => ProcedurePresenter::categoryTitle($p->category_code, $lang),

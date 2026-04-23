@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\Storage;
 trait StoresImages
 {
     /**
-     * Store an image in S3/MinIO and return its public URL.
+     * Store an image on the configured disk and return its RELATIVE path.
      *
-     * @param UploadedFile $image  The uploaded image file.
-     * @param string       $path   The storage path (e.g. "blogs/1/main_image").
-     * @param bool         $deleteExisting Whether to delete existing files in the path first.
+     * The relative path is what should be persisted in the DB — presenters
+     * (via Src\Shared\Infrastructure\Support\MediaUrl) resolve it to a full
+     * URL on read. This keeps DB data portable across environments/buckets.
+     *
+     * @param UploadedFile $image          The uploaded image file.
+     * @param string       $path           Storage directory (e.g. "blogs/1/main_image").
+     * @param bool         $deleteExisting Wipe the directory before uploading.
+     * @return string Relative path of the stored file (e.g. "blogs/1/main_image/file.jpg").
      */
     protected function storeImage(UploadedFile $image, string $path, bool $deleteExisting = false): string
     {
@@ -28,9 +33,6 @@ trait StoresImages
 
         $disk->put($fullPath, file_get_contents($image->getRealPath()));
 
-        $baseUrl = rtrim(config('filesystems.disks.s3.url') ?? config('filesystems.disks.s3.endpoint'), '/');
-        $bucket = config('filesystems.disks.s3.bucket');
-
-        return "{$baseUrl}/{$fullPath}";
+        return $fullPath;
     }
 }

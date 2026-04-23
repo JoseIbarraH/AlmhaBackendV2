@@ -25,9 +25,12 @@ class UpdateDesignItemUseCase
         }
 
         if (isset($data['media_file'])) {
-            // Remove old
+            // Remove old (handle both full URLs and relative paths)
             if ($item->mediaPath) {
-                Storage::disk('s3')->delete($item->mediaPath);
+                $oldPath = \Src\Shared\Infrastructure\Support\MediaUrl::toRelativePath($item->mediaPath);
+                if ($oldPath !== '') {
+                    Storage::disk('s3')->delete($oldPath);
+                }
             }
 
             $path = $data['media_file']->store('designs', 's3');

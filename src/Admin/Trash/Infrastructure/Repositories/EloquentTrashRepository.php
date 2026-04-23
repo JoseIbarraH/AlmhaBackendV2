@@ -9,10 +9,13 @@ use Src\Admin\Trash\Domain\Entity\TrashItem;
 use Src\Admin\Blog\Infrastructure\Models\BlogEloquentModel;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
 use Src\Admin\Team\Infrastructure\Models\TeamEloquentModel;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 use App\Models\User as EloquentUserModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use DateTime;
 
 final class EloquentTrashRepository implements TrashRepositoryContract
@@ -90,10 +93,92 @@ final class EloquentTrashRepository implements TrashRepositoryContract
             throw new \RuntimeException("Invalid trash type: $type");
         }
 
-        $record = $modelClass::onlyTrashed()->find($id);
+        $record = $modelClass::onlyTrashed()
+            ->with($this->getMediaRelationships($type))
+            ->find($id);
 
         if ($record) {
+            // Collect every S3 file tied to this record before we destroy the DB row.
+            $this->deleteMedia($type, $record);
             $record->forceDelete();
+        }
+    }
+
+    /**
+     * Which relationships to eager-load when preparing the S3 cleanup list.
+     */
+    private function getMediaRelationships(string $type): array
+    {
+        return match ($type) {
+            'procedure' => ['sections', 'gallery'],
+            'team'      => ['images'],
+            default     => [],
+        };
+    }
+
+    /**
+     * Removes every S3 file owned by the record. Runs before forceDelete() so
+     * there are no orphans in the bucket when the DB row goes away.
+     */
+    private function deleteMedia(string $type, Model $record): void
+    {
+        $paths = [];
+
+        switch ($type) {
+            case 'blog':
+                if (!empty($record->image)) {
+                    $paths[] = $record->image;
+                }
+                break;
+
+            case 'procedure':
+                if (!empty($record->image)) {
+                    $paths[] = $record->image;
+                }
+                foreach ($record->sections ?? [] as $section) {
+                    if (!empty($section->image)) {
+                        $paths[] = $section->image;
+                    }
+                }
+                foreach ($record->gallery ?? [] as $gallery) {
+                    if (!empty($gallery->path)) {
+                        $paths[] = $gallery->path;
+                    }
+                }
+                break;
+
+            case 'team':
+                if (!empty($record->image)) {
+                    $paths[] = $record->image;
+                }
+                foreach ($record->images ?? [] as $image) {
+                    if (!empty($image->path)) {
+                        $paths[] = $image->path;
+                    }
+                }
+                break;
+
+            // 'user' has no media attached in this schema
+        }
+
+        if ($paths === []) {
+            return;
+        }
+
+        $disk = Storage::disk('s3');
+        foreach ($paths as $raw) {
+            $relative = MediaUrl::toRelativePath($raw);
+            if ($relative === '') {
+                continue;
+            }
+            try {
+                if ($disk->exists($relative)) {
+                    $disk->delete($relative);
+                }
+            } catch (\Throwable $e) {
+                // Never block the force-delete because S3 hiccuped — log and move on.
+                Log::warning("Failed to delete S3 object {$relative}: " . $e->getMessage());
+            }
         }
     }
 

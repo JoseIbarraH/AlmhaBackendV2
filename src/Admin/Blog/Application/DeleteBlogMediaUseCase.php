@@ -5,32 +5,28 @@ declare(strict_types=1);
 namespace Src\Admin\Blog\Application;
 
 use Illuminate\Support\Facades\Storage;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class DeleteBlogMediaUseCase
 {
-    public function execute(string $url): void
+    /**
+     * Deletes an image from S3 given either:
+     *   - a full URL ("https://media.almha.../blog/1/img.jpg")
+     *   - a relative path ("blog/1/img.jpg")
+     *
+     * Both formats coexist because older data stored URLs while newer uploads
+     * store paths. MediaUrl::toRelativePath() normalizes them for the disk.
+     */
+    public function execute(string $urlOrPath): void
     {
-        // Extract relative path from S3 url
-        $baseUrl = config('filesystems.disks.s3.url');
-        
-        if (str_starts_with($url, $baseUrl)) {
-            $path = substr($url, strlen($baseUrl));
-            
-            if (Storage::disk('s3')->exists($path)) {
-                Storage::disk('s3')->delete($path);
-            }
+        $path = MediaUrl::toRelativePath($urlOrPath);
+        if ($path === '') {
             return;
         }
 
-        // Fallback for local storage if needed
-        $parsedUrl = parse_url($url, PHP_URL_PATH);
-        $prefix = '/storage/';
-        if ($parsedUrl && str_starts_with($parsedUrl, $prefix)) {
-            $path = substr($parsedUrl, strlen($prefix));
-            
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
+        $disk = Storage::disk('s3');
+        if ($disk->exists($path)) {
+            $disk->delete($path);
         }
     }
 }

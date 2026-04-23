@@ -6,6 +6,7 @@ namespace Src\Landing\Blog\Infrastructure\Support;
 
 use Src\Admin\Blog\Infrastructure\Models\BlogCategoryEloquentModel;
 use Src\Admin\Blog\Infrastructure\Models\BlogEloquentModel;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class BlogPresenter
 {
@@ -18,7 +19,7 @@ final class BlogPresenter
             'id'            => $blog->id,
             'title'         => $t['title'] ?? '',
             'slug'          => $t['slug'] ?? '',
-            'image'         => $blog->image ?? '',
+            'image'         => MediaUrl::resolve($blog->image),
             'status'        => $blog->status ?? '',
             'writer'        => $blog->writer ?? '',
             'excerpts'      => self::excerpt($t['content'] ?? ''),
@@ -36,7 +37,7 @@ final class BlogPresenter
         return [
             'id'            => $blog->id,
             'slug'          => $t['slug'] ?? '',
-            'image'         => $blog->image ?? '',
+            'image'         => MediaUrl::resolve($blog->image),
             'writer'        => $blog->writer ?? '',
             'title'         => $t['title'] ?? '',
             'content'       => $t['content'] ?? '',

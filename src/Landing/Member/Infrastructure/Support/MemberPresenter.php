@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Landing\Member\Infrastructure\Support;
 
 use Src\Admin\Team\Infrastructure\Models\TeamEloquentModel;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class MemberPresenter
 {
@@ -19,7 +20,7 @@ final class MemberPresenter
 
             return [
                 'id'          => $img->id,
-                'path'        => $img->path,
+                'path'        => MediaUrl::resolve($img->path),
                 'order'       => (int) ($img->order ?? 0),
                 'description' => $t?->description ?? '',
             ];
@@ -30,7 +31,7 @@ final class MemberPresenter
             'slug'           => $team->slug ?? '',
             'name'           => $team->name ?? '',
             'status'         => $team->status ?? '',
-            'image'          => $team->image ?? '',
+            'image'          => MediaUrl::resolve($team->image),
             'biography'      => $translation?->biography ?? '',
             'description'    => $translation?->description ?? '',
             'specialization' => $translation?->specialization ?? '',

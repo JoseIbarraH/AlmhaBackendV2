@@ -6,6 +6,7 @@ namespace Src\Landing\Procedure\Infrastructure\Support;
 
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureCategoryEloquentModel;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class ProcedurePresenter
 {
@@ -17,7 +18,7 @@ final class ProcedurePresenter
             'id'            => $p->id,
             'status'        => $p->status ?? '',
             'slug'          => $t['slug'] ?? '',
-            'image'         => $p->image ?? '',
+            'image'         => MediaUrl::resolve($p->image),
             'title'         => $t['title'] ?? '',
             'subtitle'      => $t['subtitle'] ?? '',
             'category'      => self::categoryTitle($p->category_code, $lang),
@@ -43,7 +44,7 @@ final class ProcedurePresenter
         $sections = $p->sections->map(fn ($s) => [
             'id'         => $s->id,
             'type'       => $s->type,
-            'image'      => $s->image,
+            'image'      => MediaUrl::resolve($s->image),
             'title'      => $s->translations->first()?->title ?? '',
             'contentOne' => $s->translations->first()?->content_one ?? '',
             'contentTwo' => $s->translations->first()?->content_two ?? '',
@@ -93,7 +94,7 @@ final class ProcedurePresenter
 
         $gallery = $p->gallery->sortBy('order')->map(fn ($g) => [
             'id'    => $g->id,
-            'path'  => $g->path,
+            'path'  => MediaUrl::resolve($g->path),
             'order' => $g->order,
         ])->values()->toArray();
 
@@ -101,7 +102,7 @@ final class ProcedurePresenter
             'id'            => $p->id,
             'status'        => $p->status ?? '',
             'slug'          => $t['slug'] ?? '',
-            'image'         => $p->image ?? '',
+            'image'         => MediaUrl::resolve($p->image),
             'views'         => (int) ($p->views ?? 0),
             'title'         => $t['title'] ?? '',
             'subtitle'      => $t['subtitle'] ?? '',

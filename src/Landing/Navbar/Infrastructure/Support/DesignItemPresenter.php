@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Landing\Navbar\Infrastructure\Support;
 
 use Src\Admin\Design\Infrastructure\Models\EloquentDesignModel;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class DesignItemPresenter
 {
@@ -29,7 +30,7 @@ final class DesignItemPresenter
 
             return [
                 'type'     => $item->media_type ?? 'image',
-                'image'    => $item->media_path ?? '',
+                'image'    => MediaUrl::resolve($item->media_path),
                 'title'    => $t?->title ?? '',
                 'subtitle' => $t?->subtitle ?? '',
             ];

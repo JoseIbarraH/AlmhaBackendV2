@@ -142,9 +142,12 @@ class EloquentDesignRepository implements DesignRepositoryContract
         /** @var EloquentDesignItemModel|null $itemModel */
         $itemModel = EloquentDesignItemModel::find($itemId);
         if ($itemModel) {
-            // Delete media file if exists
+            // Delete media file if exists (handle both full URLs and relative paths)
             if ($itemModel->media_path) {
-                Storage::disk('s3')->delete($itemModel->media_path);
+                $path = \Src\Shared\Infrastructure\Support\MediaUrl::toRelativePath($itemModel->media_path);
+                if ($path !== '') {
+                    Storage::disk('s3')->delete($path);
+                }
             }
             $itemModel->delete(); // Cascades translations
         }
