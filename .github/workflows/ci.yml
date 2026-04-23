@@ -1,0 +1,84 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  swagger:
+    name: Swagger docs are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, zip, bcmath, pdo, pdo_sqlite
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+      - name: Bootstrap app (minimal env for artisan)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Regenerate Swagger
+        run: php artisan l5-swagger:generate
+
+      - name: Fail if api-docs.json is stale
+        run: |
+          if ! git diff --exit-code storage/api-docs/api-docs.json; then
+            echo "::error::storage/api-docs/api-docs.json is out of sync with the OA annotations."
+            echo "::error::Fix: run 'php artisan l5-swagger:generate' locally and commit the regenerated file."
+            echo "--- DIFF (first 80 lines) ---"
+            git --no-pager diff storage/api-docs/api-docs.json | head -80
+            exit 1
+          fi
+          echo "✓ Swagger docs are in sync with annotations."
+
+  tests:
+    name: PHPUnit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, zip, bcmath, pdo, pdo_sqlite, sqlite3
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+      - name: Bootstrap app
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan jwt:secret --force --no-interaction
+
+      - name: Run tests
+        run: php artisan test --parallel=2
