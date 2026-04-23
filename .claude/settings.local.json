@@ -8,7 +8,8 @@
       "Bash(php artisan *)",
       "Bash(curl -s -o /tmp/n8n_response -w \"HTTP %{http_code}\\\\n\" -X POST \"https://n8n.almhaplasticsurgery.com/webhook-test/43370400-b5eb-44e7-b144-d3f896209762\" -H \"Content-Type: application/json\" -d '{\"email\":\"test@example.com\",\"event\":\"test\"}')",
       "Read(//tmp/**)",
-      "Bash(docker --version)"
+      "Bash(docker --version)",
+      "Bash(grep -n 'image\\\\s*??\\\\s*$team' 'src/Admin/Team/Application/*.php')"
     ]
   }
 }

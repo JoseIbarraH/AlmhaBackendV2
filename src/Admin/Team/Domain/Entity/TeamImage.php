@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Team\Domain\Entity;
 
+use Src\Shared\Infrastructure\Support\MediaUrl;
+
 final class TeamImage implements \JsonSerializable
 {
     private ?int $id;
@@ -46,7 +48,8 @@ final class TeamImage implements \JsonSerializable
     {
         return [
             'id' => $this->id,
-            'path' => $this->path,
+            'path' => MediaUrl::resolve($this->path),
+            'pathRaw' => $this->path,
             'order' => $this->order,
             'translations' => $this->translations,
         ];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Procedure\Domain\Entity;
 
 use RuntimeException;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class ProcedureResultGallery implements \JsonSerializable
 {
@@ -42,7 +43,8 @@ final class ProcedureResultGallery implements \JsonSerializable
     {
         return [
             'id' => $this->id,
-            'path' => $this->path,
+            'path' => MediaUrl::resolve($this->path),
+            'pathRaw' => $this->path,
             'type' => $this->type,
             'pairId' => $this->pairId,
             'order' => $this->order

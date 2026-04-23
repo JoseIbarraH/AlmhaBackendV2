@@ -8,6 +8,7 @@ use Src\Admin\Blog\Domain\Contracts\BlogRepositoryContract;
 use Src\Admin\Blog\Domain\Entity\Blog;
 use Src\Admin\Blog\Domain\Entity\BlogTranslation;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 use RuntimeException;
 
 final class UpdateBlogUseCase
@@ -78,11 +79,15 @@ final class UpdateBlogUseCase
             $translations = $blog->translations();
         }
 
+        // If the admin UI sends back a full URL unchanged (instead of a new
+        // file), normalize to the relative path before persisting.
+        $finalImage = $image !== null ? MediaUrl::toRelativePath($image) : $blog->image();
+
         $blogToUpdate = new Blog(
             $finalCategoryCode,
             $blog->status(),
             $finalUserId,
-            $image ?? $blog->image(),
+            $finalImage,
             $finalWriter,
             $blog->views(),
             $blog->publishedAt(),

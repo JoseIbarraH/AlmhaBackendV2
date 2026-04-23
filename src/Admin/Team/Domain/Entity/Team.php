@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Team\Domain\Entity;
 
 use RuntimeException;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class Team implements \JsonSerializable
 {
@@ -85,7 +86,8 @@ final class Team implements \JsonSerializable
             'slug' => $this->slug,
             'name' => $this->name,
             'status' => $this->status,
-            'image' => $this->image,
+            'image' => MediaUrl::resolve($this->image),
+            'imagePath' => $this->image,
             'translations' => $this->translations,
             'images' => $this->images,
         ];

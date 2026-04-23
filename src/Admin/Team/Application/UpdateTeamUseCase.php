@@ -85,8 +85,10 @@ final class UpdateTeamUseCase {
             foreach ($images as $imageData) {
                 $imageTranslations = [];
                 $imageTranslations[] = new TeamImageTranslation($baseLang, null);
+                // Normalize any URL sent by the UI back to a relative path.
+                $path = \Src\Shared\Infrastructure\Support\MediaUrl::toRelativePath($imageData['path']);
                 $teamImages[] = new TeamImage(
-                    $imageData['path'],
+                    $path,
                     (int) ($imageData['order'] ?? 0),
                     $imageTranslations
                 );
@@ -95,12 +97,16 @@ final class UpdateTeamUseCase {
             $teamImages = $existingTeam->images();
         }
 
+        $finalImage = $image !== null
+            ? \Src\Shared\Infrastructure\Support\MediaUrl::toRelativePath($image)
+            : $existingTeam->image();
+
         $team = new Team(
             $slug ?? $existingTeam->slug(),
             $finalName,
             $finalStatus,
             $finalUserId,
-            $image ?? $existingTeam->image(),
+            $finalImage,
             $translations,
             $teamImages,
             $id

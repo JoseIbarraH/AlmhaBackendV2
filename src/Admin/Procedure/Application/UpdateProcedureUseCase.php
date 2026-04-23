@@ -18,6 +18,7 @@ use Src\Admin\Procedure\Domain\Entity\ProcedurePreparationStepTranslation;
 use Src\Admin\Procedure\Domain\Entity\ProcedureRecoveryPhase;
 use Src\Admin\Procedure\Domain\Entity\ProcedureRecoveryPhaseTranslation;
 use Src\Admin\Procedure\Domain\Entity\ProcedureResultGallery;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
 use RuntimeException;
 
@@ -121,10 +122,13 @@ final class UpdateProcedureUseCase
             }, $galleryData)
             : $procedure->gallery();
 
+        // Normalize full URLs sent back by the admin UI to relative paths.
+        $finalImage = $image !== null ? MediaUrl::toRelativePath($image) : $procedure->image();
+
         $updatedProcedure = new Procedure(
             $id,
             $finalUserId,
-            $image ?? $procedure->image(),
+            $finalImage,
             $finalCategoryCode,
             $finalStatus,
             $procedure->views(),

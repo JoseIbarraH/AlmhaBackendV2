@@ -7,6 +7,7 @@ namespace Src\Admin\Blog\Domain\Entity;
 use DateTime;
 use DateTimeInterface;
 use RuntimeException;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class Blog implements \JsonSerializable
 {
@@ -99,7 +100,10 @@ final class Blog implements \JsonSerializable
         return [
             'id' => $this->id,
             'userId' => $this->userId,
-            'image' => $this->image,
+            // Resolved absolute URL (for preview in the admin UI).
+            'image' => MediaUrl::resolve($this->image),
+            // Raw stored path — useful for the admin when editing/referencing.
+            'imagePath' => $this->image,
             'categoryCode' => $this->categoryCode,
             'writer' => $this->writer,
             'views' => $this->views,

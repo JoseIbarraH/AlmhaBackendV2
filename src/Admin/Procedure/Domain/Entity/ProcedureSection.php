@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Procedure\Domain\Entity;
 
+use Src\Shared\Infrastructure\Support\MediaUrl;
+
 final class ProcedureSection implements \JsonSerializable
 {
     private ?int $id;
@@ -42,7 +44,8 @@ final class ProcedureSection implements \JsonSerializable
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'image' => $this->image,
+            'image' => MediaUrl::resolve($this->image),
+            'imagePath' => $this->image,
             'translations' => $this->translations,
         ];
     }

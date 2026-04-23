@@ -6,6 +6,7 @@ namespace Src\Admin\Procedure\Domain\Entity;
 
 use DateTime;
 use RuntimeException;
+use Src\Shared\Infrastructure\Support\MediaUrl;
 
 final class Procedure implements \JsonSerializable
 {
@@ -132,7 +133,8 @@ final class Procedure implements \JsonSerializable
         return [
             'id' => $this->id,
             'userId' => $this->userId,
-            'image' => $this->image,
+            'image' => MediaUrl::resolve($this->image),
+            'imagePath' => $this->image,
             'categoryCode' => $this->categoryCode,
             'status' => $this->status,
             'views' => $this->views,
