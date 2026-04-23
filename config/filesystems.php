@@ -53,7 +53,11 @@ return [
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
+            // If AWS_URL is not explicitly set, compose it from ENDPOINT + BUCKET.
+            // Dokploy/Docker inject env vars literally — the ${VAR} interpolation
+            // syntax only works when phpdotenv parses a .env file.
+            'url' => env('AWS_URL')
+                ?: rtrim((string) env('AWS_ENDPOINT', ''), '/') . '/' . env('AWS_BUCKET', ''),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'visibility' => 'public',
