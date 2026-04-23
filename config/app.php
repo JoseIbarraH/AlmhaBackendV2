@@ -56,6 +56,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URLs
+    |--------------------------------------------------------------------------
+    |
+    | Two distinct frontends consume this API:
+    |   - admin_url:  the staff/admin SPA (Nuxt) used to manage content.
+    |                 Used to build email-verification links for new admins.
+    |   - client_url: the public marketing/blog site (Astro) where end users
+    |                 land. Used for newsletter confirmation links and any
+    |                 public-facing redirect generated server-side.
+    |
+    | `frontend_url` is kept as a backward-compatible alias for `admin_url`
+    | so older code that reads `config('app.frontend_url')` keeps working.
+    */
+
+    'admin_url'    => env('ADMIN_URL', env('FRONTEND_URL', 'http://localhost:3000')),
+    'frontend_url' => env('FRONTEND_URL', env('ADMIN_URL', 'http://localhost:3000')),
+    'client_url'   => env('CLIENT_URL', 'http://localhost:4321'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

@@ -35,13 +35,13 @@ final class SendToN8nJob implements ShouldQueue
             return;
         }
 
-        // Build the confirmation URL server-side so n8n's email template only
-        // needs {{ $json.body.confirmation_url }} — no hardcoded URLs in the
-        // workflow. Points to the public frontend page (which then calls the
-        // backend internally) so the user sees a branded confirmation screen.
-        $frontendUrl = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', '')), '/');
+        // Build the confirmation URL on the public CLIENT site (not admin).
+        // The Astro page at /{lang}/subscribe/confirm calls the backend
+        // internally and renders the result. n8n template only needs
+        // {{ $json.body.confirmation_url }}.
+        $clientUrl   = rtrim((string) config('app.client_url'), '/');
         $defaultLang = (string) config('app.locale', 'es');
-        $confirmationUrl = "{$frontendUrl}/{$defaultLang}/subscribe/confirm?token=" . urlencode($this->token);
+        $confirmationUrl = "{$clientUrl}/{$defaultLang}/subscribe/confirm?token=" . urlencode($this->token);
 
         try {
             $response = Http::withHeaders([
