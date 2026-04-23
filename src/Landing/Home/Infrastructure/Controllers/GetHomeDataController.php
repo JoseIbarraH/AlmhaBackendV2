@@ -54,7 +54,8 @@ final class GetHomeDataController
                 'background3Setting' => DesignItemPresenter::settingsFor('background_3'),
             ],
             'carousel' => [
-                'carousel'        => DesignItemPresenter::itemsFor('main_banner', $lang),
+                // Falls back to alternate_main_banner if main is inactive/empty.
+                'carousel'        => DesignItemPresenter::itemsFor('main_banner', $lang, 'alternate_main_banner'),
                 'carouselSetting' => DesignItemPresenter::settingsFor('main_banner'),
             ],
             'carouselTool' => [

@@ -48,7 +48,8 @@ final class GetNavbarDataController
 
     private function buildPayload(string $lang): array
     {
-        $carousel = DesignItemPresenter::itemsFor('main_banner', $lang);
+        // Falls back to alternate_main_banner if main is inactive/empty.
+        $carousel = DesignItemPresenter::itemsFor('main_banner', $lang, 'alternate_main_banner');
 
         $procedures = ProcedureEloquentModel::query()
             ->where('status', 'published')
