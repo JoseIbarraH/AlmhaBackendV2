@@ -6,6 +6,7 @@ namespace Src\Admin\Analytics\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Spatie\Analytics\Period;
 use Src\Admin\Analytics\Application\GetDashboardStatsUseCase;
@@ -28,9 +29,25 @@ final class GetDashboardStatsController
 
         $period = $this->getPeriod($request);
 
-        return response()->json(
-            $this->useCase->execute($period)
-        );
+        try {
+            return response()->json($this->useCase->execute($period));
+        } catch (\Throwable $e) {
+            // Logs the exact reason Google Analytics rejected us (missing
+            // creds, bad property ID, quota, etc.) so you can fix config
+            // instead of guessing why the dashboard is empty.
+            Log::error('Analytics dashboard failed: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'period_start' => $period->startDate->toDateString(),
+                'period_end'   => $period->endDate->toDateString(),
+            ]);
+
+            return response()->json([
+                'error'   => 'analytics_unavailable',
+                'message' => config('app.debug')
+                    ? $e->getMessage()
+                    : 'Analytics data is temporarily unavailable. Check the server logs.',
+            ], 503);
+        }
     }
 
     private function getPeriod(Request $request): Period
