@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Landing\Subscription\Infrastructure\Controllers;
 
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Landing\Subscription\Application\ConfirmSubscriptionUseCase;
+use Src\Shared\Infrastructure\Http\ClientResponse;
 
 final class ConfirmSubscriptionController
 {
@@ -15,31 +16,26 @@ final class ConfirmSubscriptionController
     }
 
     /**
-     * GET /api/v1/subscribe/confirm?token=...
+     * GET /api/client/subscribe/confirm?token=...
      *
-     * Clicked from an email. Confirms the subscription and redirects the user
-     * to the frontend with a status query param so the SPA can show a toast
-     * or banner. Uses GET (not POST) because email clients always issue GET.
+     * Called by the public frontend confirmation page (the user clicks a link
+     * in an email that lands on the SSR page; the page calls this endpoint
+     * server-side and renders the result). Returns JSON — UI is the
+     * frontend's responsibility.
      */
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(Request $request): JsonResponse
     {
         $token = (string) $request->query('token', '');
 
         if ($token === '') {
-            return $this->redirect('invalid');
+            return ClientResponse::error('Token is required.', 400, ['status' => 'invalid']);
         }
 
         try {
             $this->useCase->execute($token);
-            return $this->redirect('confirmed');
+            return ClientResponse::success(['status' => 'confirmed'], 'Subscription confirmed.');
         } catch (\Throwable $e) {
-            return $this->redirect('failed');
+            return ClientResponse::error('Could not confirm subscription.', 410, ['status' => 'failed']);
         }
-    }
-
-    private function redirect(string $status): RedirectResponse
-    {
-        $frontend = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:4321')), '/');
-        return redirect()->away("{$frontend}/?subscription={$status}");
     }
 }

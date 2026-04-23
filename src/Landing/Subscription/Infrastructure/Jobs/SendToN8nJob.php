@@ -37,9 +37,11 @@ final class SendToN8nJob implements ShouldQueue
 
         // Build the confirmation URL server-side so n8n's email template only
         // needs {{ $json.body.confirmation_url }} — no hardcoded URLs in the
-        // workflow. Uses APP_URL so it works in any environment.
-        $confirmationUrl = rtrim((string) config('app.url'), '/')
-            . '/api/client/subscribe/confirm?token=' . urlencode($this->token);
+        // workflow. Points to the public frontend page (which then calls the
+        // backend internally) so the user sees a branded confirmation screen.
+        $frontendUrl = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', '')), '/');
+        $defaultLang = (string) config('app.locale', 'es');
+        $confirmationUrl = "{$frontendUrl}/{$defaultLang}/subscribe/confirm?token=" . urlencode($this->token);
 
         try {
             $response = Http::withHeaders([
