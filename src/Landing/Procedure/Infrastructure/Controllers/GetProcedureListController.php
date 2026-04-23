@@ -6,6 +6,7 @@ namespace Src\Landing\Procedure\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureCategoryEloquentModel;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
 use Src\Landing\Procedure\Infrastructure\Support\ProcedurePresenter;
@@ -17,6 +18,23 @@ final class GetProcedureListController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/procedure",
+        summary: "Listado público de procedimientos",
+        description: "Devuelve procedimientos paginados con categorías. Cacheado 5 min.",
+        tags: ["Client / Procedure"],
+        parameters: [
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+            new OA\Parameter(name: "page", in: "query", required: false, schema: new OA\Schema(type: "integer", default: 1)),
+            new OA\Parameter(name: "per_page", in: "query", required: false, schema: new OA\Schema(type: "integer", default: 9)),
+            new OA\Parameter(name: "filter[category_code]", in: "query", required: false, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "filter[search]", in: "query", required: false, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "sort", in: "query", required: false, schema: new OA\Schema(type: "string", default: "-created_at")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Lista paginada con categorías"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $lang     = $this->resolveLang($request);

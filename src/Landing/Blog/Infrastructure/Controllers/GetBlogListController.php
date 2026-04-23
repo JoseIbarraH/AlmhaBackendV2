@@ -6,6 +6,7 @@ namespace Src\Landing\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Admin\Blog\Infrastructure\Models\BlogCategoryEloquentModel;
 use Src\Admin\Blog\Infrastructure\Models\BlogEloquentModel;
 use Src\Landing\Blog\Infrastructure\Support\BlogPresenter;
@@ -17,6 +18,23 @@ final class GetBlogListController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/blog",
+        summary: "Listado público de blogs",
+        description: "Devuelve blogs paginados. Soporta filtros por categoría y búsqueda. Cacheado 5 min.",
+        tags: ["Client / Blog"],
+        parameters: [
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+            new OA\Parameter(name: "page", in: "query", required: false, schema: new OA\Schema(type: "integer", default: 1)),
+            new OA\Parameter(name: "per_page", in: "query", required: false, schema: new OA\Schema(type: "integer", default: 9)),
+            new OA\Parameter(name: "filter[category_code]", in: "query", required: false, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "filter[search]", in: "query", required: false, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "sort", in: "query", required: false, description: "Prefijar con - para desc", schema: new OA\Schema(type: "string", default: "-published_at")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Lista paginada con categorías y últimas 3"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $lang     = $this->resolveLang($request);

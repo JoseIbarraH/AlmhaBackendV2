@@ -6,6 +6,7 @@ namespace Src\Landing\Home\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Landing\Navbar\Infrastructure\Support\DesignItemPresenter;
 use Src\Shared\Infrastructure\Cache\ClientCache;
 use Src\Shared\Infrastructure\Http\ClientResponse;
@@ -15,6 +16,18 @@ final class GetHomeDataController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/home",
+        summary: "Datos del home del sitio público",
+        description: "Agrega 6 secciones de Design: backgrounds (1-3), main banner, brands carousel y image video. Cacheado 10 min.",
+        tags: ["Client / Home"],
+        parameters: [
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Secciones del home"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $lang = $this->resolveLang($request);

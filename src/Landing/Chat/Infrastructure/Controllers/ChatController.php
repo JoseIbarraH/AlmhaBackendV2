@@ -7,11 +7,35 @@ namespace Src\Landing\Chat\Infrastructure\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 use Src\Landing\Chat\Infrastructure\Requests\ChatRequest;
 use Src\Shared\Infrastructure\Http\ApiResponse;
 
 final class ChatController
 {
+    #[OA\Post(
+        path: "/api/v1/chat",
+        summary: "Proxy del chat hacia n8n",
+        description: "Rate-limited a 30 req/min por IP. Recibe el mensaje, lo reenvía a n8n y devuelve la respuesta del bot.",
+        tags: ["Landing / Webhooks"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["chatInput", "sessionId"],
+                properties: [
+                    new OA\Property(property: "chatInput", type: "string", maxLength: 1500),
+                    new OA\Property(property: "sessionId", type: "string", description: "Alfanumérico, generado en el cliente"),
+                    new OA\Property(property: "action", type: "string", enum: ["sendMessage"], default: "sendMessage"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Respuesta de n8n (contiene output/text/response)"),
+            new OA\Response(response: 422, description: "Error de validación"),
+            new OA\Response(response: 429, description: "Rate limit excedido"),
+            new OA\Response(response: 502, description: "Fallo al conectar con n8n"),
+        ]
+    )]
     public function __invoke(ChatRequest $request): JsonResponse
     {
         $webhookUrl = config('services.n8n.chat_webhook_url');

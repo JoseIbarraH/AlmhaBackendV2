@@ -6,6 +6,7 @@ namespace Src\Landing\Subscription\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Landing\Subscription\Application\SubscribeUseCase;
 
 final class SubscribeController
@@ -17,6 +18,23 @@ final class SubscribeController
         $this->useCase = $useCase;
     }
 
+    #[OA\Post(
+        path: "/api/client/subscribe",
+        summary: "Suscripción al newsletter",
+        description: "Crea un Subscriber pendiente y dispatcha SendToN8nJob. El usuario debe confirmar via email para activar.",
+        tags: ["Client / Subscription"],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email"],
+                properties: [new OA\Property(property: "email", type: "string", format: "email")]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Subscriber pendiente de confirmación"),
+            new OA\Response(response: 400, description: "Error (email inválido o ya suscrito)"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([

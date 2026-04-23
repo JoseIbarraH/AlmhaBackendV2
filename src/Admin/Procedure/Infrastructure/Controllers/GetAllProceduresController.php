@@ -31,6 +31,10 @@ final class GetAllProceduresController
         security: [["bearerAuth" => []]],
         parameters: [
             new OA\Parameter(
+                name: "Accept-Language",
+                in: "header",
+                required: false,
+                description: "Idioma de los contenidos (es, en)",
                 schema: new OA\Schema(type: "string", default: "es")
             ),
             new OA\Parameter(

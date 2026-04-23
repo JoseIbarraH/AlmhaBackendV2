@@ -6,6 +6,7 @@ namespace Src\Landing\Navbar\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
 use Src\Admin\Settings\Infrastructure\Models\EloquentSettingModel;
 use Src\Landing\Navbar\Infrastructure\Support\DesignItemPresenter;
@@ -19,6 +20,18 @@ final class GetNavbarDataController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/navbar-data",
+        summary: "Datos del navbar del sitio público",
+        description: "Incluye carrusel principal, procedimientos agrupados por categoría, top 4 por views y settings de contacto/redes. Cacheado 5 min.",
+        tags: ["Client / Navbar"],
+        parameters: [
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Datos del navbar"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $lang = $this->resolveLang($request);

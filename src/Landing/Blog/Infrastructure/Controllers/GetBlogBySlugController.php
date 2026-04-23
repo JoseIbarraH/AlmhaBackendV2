@@ -6,6 +6,7 @@ namespace Src\Landing\Blog\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Admin\Blog\Infrastructure\Models\BlogEloquentModel;
 use Src\Admin\Blog\Infrastructure\Models\BlogTranslationEloquentModel;
 use Src\Landing\Blog\Infrastructure\Support\BlogPresenter;
@@ -17,6 +18,20 @@ final class GetBlogBySlugController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/blog/{slug}",
+        summary: "Detalle público de un blog por slug",
+        description: "Incrementa el contador de views. El payload incluye random_blogs.",
+        tags: ["Client / Blog"],
+        parameters: [
+            new OA\Parameter(name: "slug", in: "path", required: true, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Blog + random_blogs"),
+            new OA\Response(response: 404, description: "No encontrado"),
+        ]
+    )]
     public function __invoke(Request $request, string $slug): JsonResponse
     {
         $lang = $this->resolveLang($request);

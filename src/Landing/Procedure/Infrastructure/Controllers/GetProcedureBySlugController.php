@@ -6,6 +6,7 @@ namespace Src\Landing\Procedure\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureTranslationEloquentModel;
 use Src\Admin\Settings\Infrastructure\Models\EloquentSettingModel;
@@ -18,6 +19,20 @@ final class GetProcedureBySlugController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/procedure/{slug}",
+        summary: "Detalle público de un procedimiento por slug",
+        description: "Incluye secciones, FAQs, pasos de preparación, fases de recuperación, galería y datos de WhatsApp.",
+        tags: ["Client / Procedure"],
+        parameters: [
+            new OA\Parameter(name: "slug", in: "path", required: true, schema: new OA\Schema(type: "string")),
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Procedimiento completo"),
+            new OA\Response(response: 404, description: "No encontrado"),
+        ]
+    )]
     public function __invoke(Request $request, string $slug): JsonResponse
     {
         $lang = $this->resolveLang($request);

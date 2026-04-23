@@ -6,6 +6,7 @@ namespace Src\Landing\Subscription\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Landing\Subscription\Application\ConfirmSubscriptionUseCase;
 use Src\Shared\Infrastructure\Http\ClientResponse;
 
@@ -15,14 +16,20 @@ final class ConfirmSubscriptionController
     {
     }
 
-    /**
-     * GET /api/client/subscribe/confirm?token=...
-     *
-     * Called by the public frontend confirmation page (the user clicks a link
-     * in an email that lands on the SSR page; the page calls this endpoint
-     * server-side and renders the result). Returns JSON — UI is the
-     * frontend's responsibility.
-     */
+    #[OA\Get(
+        path: "/api/client/subscribe/confirm",
+        summary: "Confirma la suscripción vía token",
+        description: "Llamado por la página SSR de confirmación del frontend (al usuario le llega un email con link que cae en esa página, que hace esta llamada internamente).",
+        tags: ["Client / Subscription"],
+        parameters: [
+            new OA\Parameter(name: "token", in: "query", required: true, schema: new OA\Schema(type: "string")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Suscripción confirmada"),
+            new OA\Response(response: 400, description: "Token ausente"),
+            new OA\Response(response: 410, description: "Token inválido o expirado"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $token = (string) $request->query('token', '');

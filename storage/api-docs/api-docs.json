@@ -117,6 +117,9 @@
                     },
                     "401": {
                         "description": "Credenciales inválidas"
+                    },
+                    "403": {
+                        "description": "Correo no verificado"
                     }
                 }
             }
@@ -161,6 +164,73 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/auth/email/resend": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reenviar correo de verificación",
+                "operationId": "a970f19b8f145dc92a3f8bc6b0934bdc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Correo de verificación reenviado"
+                    },
+                    "404": {
+                        "description": "Usuario no encontrado"
+                    },
+                    "400": {
+                        "description": "El correo ya está verificado"
+                    }
+                }
+            }
+        },
+        "/auth/email/verify/{token}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Verificar correo electrónico mediante token",
+                "operationId": "b13c498a4f4c66e3f636fe1ac417e8d1",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Correo verificado exitosamente"
+                    },
+                    "400": {
+                        "description": "Token inválido o expirado"
+                    }
+                }
             }
         },
         "/blogs/{id}/status": {
@@ -229,6 +299,18 @@
                 ],
                 "summary": "Listar todas las categorías de blog",
                 "operationId": "6d70a0ef24b0b59416a141958198411b",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "description": "Idioma de los contenidos (es, en)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Lista de categorías",
@@ -322,6 +404,15 @@
                         "schema": {
                             "type": "string",
                             "default": "es"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado (published, draft, scheduled)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -586,7 +677,7 @@
                 "tags": [
                     "Blog"
                 ],
-                "summary": "Actualizar una entrada de blog",
+                "summary": "Actualizar una entrada de blog (patch-style: solo campos enviados se actualizan)",
                 "operationId": "1a3ecc495fac22b55bf6c52c1be44efa",
                 "parameters": [
                     {
@@ -605,18 +696,16 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "categoryCode",
-                                    "baseLang",
-                                    "title"
+                                    "baseLang"
                                 ],
                                 "properties": {
-                                    "categoryCode": {
-                                        "type": "string",
-                                        "example": "NOTICIAS"
-                                    },
                                     "baseLang": {
                                         "type": "string",
                                         "example": "es"
+                                    },
+                                    "categoryCode": {
+                                        "type": "string",
+                                        "example": "NOTICIAS"
                                     },
                                     "title": {
                                         "type": "string"
@@ -789,13 +878,31 @@
                 "operationId": "33c77a19944b71a18670eb38daf08eaa",
                 "parameters": [
                     {
-                        "name": "lang",
-                        "in": "query",
+                        "name": "Accept-Language",
+                        "in": "header",
                         "description": "Idioma de los contenidos (es, en)",
                         "required": false,
                         "schema": {
                             "type": "string",
                             "default": "es"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Buscar por título o subtítulo",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filtrar por estado (published, draft)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 ],
@@ -876,9 +983,6 @@
                                                 },
                                                 "contentOne": {
                                                     "type": "string"
-                                                },
-                                                "order": {
-                                                    "type": "integer"
                                                 }
                                             },
                                             "type": "object"
@@ -1103,7 +1207,7 @@
                 "tags": [
                     "Procedure"
                 ],
-                "summary": "Actualizar un procedimiento",
+                "summary": "Actualizar un procedimiento (patch-style: solo campos enviados se actualizan)",
                 "operationId": "cc621d3ea2e449ca36227b1e91b36990",
                 "parameters": [
                     {
@@ -1122,19 +1226,16 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "categoryCode",
-                                    "baseLang",
-                                    "title",
-                                    "status"
+                                    "baseLang"
                                 ],
                                 "properties": {
-                                    "categoryCode": {
-                                        "type": "string",
-                                        "example": "CIRUGIA_ESTETICA"
-                                    },
                                     "baseLang": {
                                         "type": "string",
                                         "example": "es"
+                                    },
+                                    "categoryCode": {
+                                        "type": "string",
+                                        "example": "CIRUGIA_ESTETICA"
                                     },
                                     "title": {
                                         "type": "string"
@@ -1170,9 +1271,6 @@
                                                 },
                                                 "contentOne": {
                                                     "type": "string"
-                                                },
-                                                "order": {
-                                                    "type": "integer"
                                                 }
                                             },
                                             "type": "object"
@@ -1306,16 +1404,16 @@
                 ]
             }
         },
-        "/roles": {
+        "/permissions": {
             "get": {
                 "tags": [
                     "Role"
                 ],
-                "summary": "Listar todos los roles",
-                "operationId": "f50830e5a2cd4baebdc6425d6474671b",
+                "summary": "Listar todos los permisos",
+                "operationId": "84aa519434b030b3c48cbd021062c7cd",
                 "responses": {
                     "200": {
-                        "description": "Lista de roles",
+                        "description": "Lista de permisos",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1336,63 +1434,18 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "post": {
-                "tags": [
-                    "Role"
-                ],
-                "summary": "Crear un nuevo rol",
-                "operationId": "c6e64cb5cdb4ee48edc04644ecf46095",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "name"
-                                ],
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "EDITOR"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Rol creado exitosamente"
-                    },
-                    "409": {
-                        "description": "El rol ya existe"
-                    },
-                    "422": {
-                        "description": "Error de validación"
-                    },
-                    "401": {
-                        "description": "No autorizado"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             }
         },
-        "/permissions": {
+        "/roles": {
             "get": {
                 "tags": [
                     "Role"
                 ],
-                "summary": "Listar todos los permisos",
-                "operationId": "84aa519434b030b3c48cbd021062c7cd",
+                "summary": "Listar todos los roles",
+                "operationId": "f50830e5a2cd4baebdc6425d6474671b",
                 "responses": {
                     "200": {
-                        "description": "Lista de permisos",
+                        "description": "Lista de roles",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1561,7 +1614,7 @@
                 "tags": [
                     "Team"
                 ],
-                "summary": "Actualizar un miembro del equipo",
+                "summary": "Actualizar un miembro del equipo (patch-style)",
                 "operationId": "0010e232d0d20a6afa7791924f1a2420",
                 "parameters": [
                     {
@@ -1580,9 +1633,7 @@
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "baseLang",
-                                    "name",
-                                    "status"
+                                    "baseLang"
                                 ],
                                 "properties": {
                                     "baseLang": {
@@ -1747,6 +1798,17 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "password123"
+                                    },
+                                    "roles": {
+                                        "description": "Arreglo de nombres de roles a asignar",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "blog_manager",
+                                            "audit_viewer"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -1760,6 +1822,28 @@
                     },
                     "422": {
                         "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/profile": {
+            "delete": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Eliminar la cuenta del usuario autenticado",
+                "operationId": "a46883cd821f0053d3cfe5c7c3e9be4b",
+                "responses": {
+                    "200": {
+                        "description": "Cuenta eliminada correctamente"
+                    },
+                    "400": {
+                        "description": "Error de lógica (ej: cuenta principal)"
                     }
                 },
                 "security": [
@@ -1853,6 +1937,17 @@
                                     "is_active": {
                                         "type": "boolean",
                                         "example": true
+                                    },
+                                    "roles": {
+                                        "description": "Arreglo de nombres de roles a asignar",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "example": [
+                                            "blog_manager",
+                                            "team_manager"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -2004,6 +2099,711 @@
                     }
                 ]
             }
+        },
+        "/setup/instance-status": {
+            "get": {
+                "tags": [
+                    "Setup"
+                ],
+                "summary": "Verificar si el sistema está inicializado",
+                "operationId": "71ea599f9e18045347502cb940e90bc4",
+                "responses": {
+                    "200": {
+                        "description": "Estado de inicialización",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "initialized": {
+                                            "type": "boolean",
+                                            "example": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/setup/instance-bootstrap": {
+            "post": {
+                "tags": [
+                    "Setup"
+                ],
+                "summary": "Registrar el primer usuario administrador",
+                "operationId": "f4e851750808a59662c03cd7b2d9c26d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Admin Name"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Administrador creado exitosamente"
+                    },
+                    "400": {
+                        "description": "Error de lógica (ya inicializado)"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/profile/update": {
+            "post": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Actualizar perfil del usuario autenticado",
+                "operationId": "d2aca7d4141d8198d88b8f2ce28f14bd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Nuevo Nombre"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Perfil actualizado correctamente"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/client/blog/{slug}": {
+            "get": {
+                "tags": [
+                    "Client / Blog"
+                ],
+                "summary": "Detalle público de un blog por slug",
+                "description": "Incrementa el contador de views. El payload incluye random_blogs.",
+                "operationId": "fe2633dc3a8a7fafbdd3ea84b8995339",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Blog + random_blogs"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            }
+        },
+        "/api/client/blog": {
+            "get": {
+                "tags": [
+                    "Client / Blog"
+                ],
+                "summary": "Listado público de blogs",
+                "description": "Devuelve blogs paginados. Soporta filtros por categoría y búsqueda. Cacheado 5 min.",
+                "operationId": "5643eca1b41cb9d3f0a71d6f40039e2b",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 9
+                        }
+                    },
+                    {
+                        "name": "filter[category_code]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[search]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Prefijar con - para desc",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "-published_at"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada con categorías y últimas 3"
+                    }
+                }
+            }
+        },
+        "/api/v1/chat": {
+            "post": {
+                "tags": [
+                    "Landing / Webhooks"
+                ],
+                "summary": "Proxy del chat hacia n8n",
+                "description": "Rate-limited a 30 req/min por IP. Recibe el mensaje, lo reenvía a n8n y devuelve la respuesta del bot.",
+                "operationId": "cddb3df055539b9a96c657c680540b76",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "chatInput",
+                                    "sessionId"
+                                ],
+                                "properties": {
+                                    "chatInput": {
+                                        "type": "string",
+                                        "maxLength": 1500
+                                    },
+                                    "sessionId": {
+                                        "description": "Alfanumérico, generado en el cliente",
+                                        "type": "string"
+                                    },
+                                    "action": {
+                                        "type": "string",
+                                        "default": "sendMessage",
+                                        "enum": [
+                                            "sendMessage"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Respuesta de n8n (contiene output/text/response)"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    },
+                    "429": {
+                        "description": "Rate limit excedido"
+                    },
+                    "502": {
+                        "description": "Fallo al conectar con n8n"
+                    }
+                }
+            }
+        },
+        "/api/client/contact-data": {
+            "get": {
+                "tags": [
+                    "Client / Contact"
+                ],
+                "summary": "Datos para la página de contacto",
+                "description": "Devuelve settings de contacto, WhatsApp y lista de títulos de procedimientos para el combobox del form.",
+                "operationId": "bcbfd5d676c4815680602df684b17a14",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Settings + lista de procedimientos"
+                    }
+                }
+            }
+        },
+        "/api/v1/contact": {
+            "post": {
+                "tags": [
+                    "Landing / Webhooks"
+                ],
+                "summary": "Recibe formulario de contacto y lo reenvía a n8n",
+                "description": "Rate-limited a 5 req/min por IP. Valida server-side antes de reenviar.",
+                "operationId": "2704b01dd93f32ac8c4718cf16a9b8b5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "phone",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "countryCode": {
+                                        "type": "string",
+                                        "example": "+57"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "300 123 4567"
+                                    },
+                                    "procedure": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "maxLength": 2000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Mensaje reenviado a n8n"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    },
+                    "429": {
+                        "description": "Rate limit excedido"
+                    },
+                    "502": {
+                        "description": "Fallo al reenviar al webhook"
+                    },
+                    "503": {
+                        "description": "Webhook no configurado"
+                    }
+                }
+            }
+        },
+        "/api/client/home": {
+            "get": {
+                "tags": [
+                    "Client / Home"
+                ],
+                "summary": "Datos del home del sitio público",
+                "description": "Agrega 6 secciones de Design: backgrounds (1-3), main banner, brands carousel y image video. Cacheado 10 min.",
+                "operationId": "c80332932f2cac475affab40aa8a2065",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Secciones del home"
+                    }
+                }
+            }
+        },
+        "/api/client/maintenance": {
+            "get": {
+                "tags": [
+                    "Client / Maintenance"
+                ],
+                "summary": "Flag de mantenimiento del sitio público",
+                "description": "Devuelve si el sitio está en modo mantenimiento. Cacheado 60s server-side y con Cache-Control al cliente.",
+                "operationId": "77d80c6756c5f71b5476e465623959d4",
+                "responses": {
+                    "200": {
+                        "description": "Estado del flag",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "key": {
+                                                    "type": "string",
+                                                    "example": "is_maintenance_mode"
+                                                },
+                                                "value": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/client/members/{slug}": {
+            "get": {
+                "tags": [
+                    "Client / Member"
+                ],
+                "summary": "Detalle público de un miembro del equipo",
+                "operationId": "2157b66244c86fdcbe9c109ccff82d20",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Miembro con biografía, especialización y galería"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            }
+        },
+        "/api/client/members": {
+            "get": {
+                "tags": [
+                    "Client / Member"
+                ],
+                "summary": "Listado público del equipo",
+                "description": "Solo miembros con status=active. Incluye galería de resultados de cada uno.",
+                "operationId": "2d6ce4216ef42592376f3e7162a8e7dc",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array de miembros con sus imágenes"
+                    }
+                }
+            }
+        },
+        "/api/client/navbar-data": {
+            "get": {
+                "tags": [
+                    "Client / Navbar"
+                ],
+                "summary": "Datos del navbar del sitio público",
+                "description": "Incluye carrusel principal, procedimientos agrupados por categoría, top 4 por views y settings de contacto/redes. Cacheado 5 min.",
+                "operationId": "dc631d3a0a550956730317a26a8a9611",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Datos del navbar"
+                    }
+                }
+            }
+        },
+        "/api/client/procedure/{slug}": {
+            "get": {
+                "tags": [
+                    "Client / Procedure"
+                ],
+                "summary": "Detalle público de un procedimiento por slug",
+                "description": "Incluye secciones, FAQs, pasos de preparación, fases de recuperación, galería y datos de WhatsApp.",
+                "operationId": "9d27949820c37c2290cb48490987e0f6",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Procedimiento completo"
+                    },
+                    "404": {
+                        "description": "No encontrado"
+                    }
+                }
+            }
+        },
+        "/api/client/procedure": {
+            "get": {
+                "tags": [
+                    "Client / Procedure"
+                ],
+                "summary": "Listado público de procedimientos",
+                "description": "Devuelve procedimientos paginados con categorías. Cacheado 5 min.",
+                "operationId": "c2882600896c7c19c2f30336e2af54c1",
+                "parameters": [
+                    {
+                        "name": "Accept-Language",
+                        "in": "header",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "es"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 9
+                        }
+                    },
+                    {
+                        "name": "filter[category_code]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "filter[search]",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "-created_at"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada con categorías"
+                    }
+                }
+            }
+        },
+        "/api/client/subscribe/confirm": {
+            "get": {
+                "tags": [
+                    "Client / Subscription"
+                ],
+                "summary": "Confirma la suscripción vía token",
+                "description": "Llamado por la página SSR de confirmación del frontend (al usuario le llega un email con link que cae en esa página, que hace esta llamada internamente).",
+                "operationId": "fff061ec0549e6060ab63a34e770ac37",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Suscripción confirmada"
+                    },
+                    "400": {
+                        "description": "Token ausente"
+                    },
+                    "410": {
+                        "description": "Token inválido o expirado"
+                    }
+                }
+            }
+        },
+        "/api/client/subscribe": {
+            "post": {
+                "tags": [
+                    "Client / Subscription"
+                ],
+                "summary": "Suscripción al newsletter",
+                "description": "Crea un Subscriber pendiente y dispatcha SendToN8nJob. El usuario debe confirmar via email para activar.",
+                "operationId": "913819c53707fe76cc1d15c40918d89c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscriber pendiente de confirmación"
+                    },
+                    "400": {
+                        "description": "Error (email inválido o ya suscrito)"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -2043,6 +2843,50 @@
         {
             "name": "User",
             "description": "User"
+        },
+        {
+            "name": "Profile",
+            "description": "Profile"
+        },
+        {
+            "name": "Setup",
+            "description": "Setup"
+        },
+        {
+            "name": "Client / Blog",
+            "description": "Client / Blog"
+        },
+        {
+            "name": "Landing / Webhooks",
+            "description": "Landing / Webhooks"
+        },
+        {
+            "name": "Client / Contact",
+            "description": "Client / Contact"
+        },
+        {
+            "name": "Client / Home",
+            "description": "Client / Home"
+        },
+        {
+            "name": "Client / Maintenance",
+            "description": "Client / Maintenance"
+        },
+        {
+            "name": "Client / Member",
+            "description": "Client / Member"
+        },
+        {
+            "name": "Client / Navbar",
+            "description": "Client / Navbar"
+        },
+        {
+            "name": "Client / Procedure",
+            "description": "Client / Procedure"
+        },
+        {
+            "name": "Client / Subscription",
+            "description": "Client / Subscription"
         }
     ]
 }

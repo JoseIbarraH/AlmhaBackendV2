@@ -6,6 +6,7 @@ namespace Src\Landing\ContactData\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 use Src\Admin\Procedure\Infrastructure\Models\ProcedureEloquentModel;
 use Src\Admin\Settings\Infrastructure\Models\EloquentSettingModel;
 use Src\Shared\Infrastructure\Cache\ClientCache;
@@ -16,6 +17,18 @@ final class GetContactDataController
 {
     use ResolvesLanguage;
 
+    #[OA\Get(
+        path: "/api/client/contact-data",
+        summary: "Datos para la página de contacto",
+        description: "Devuelve settings de contacto, WhatsApp y lista de títulos de procedimientos para el combobox del form.",
+        tags: ["Client / Contact"],
+        parameters: [
+            new OA\Parameter(name: "Accept-Language", in: "header", required: false, schema: new OA\Schema(type: "string", default: "es")),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Settings + lista de procedimientos"),
+        ]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $lang = $this->resolveLang($request);
