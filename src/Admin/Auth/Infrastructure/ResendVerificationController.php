@@ -2,9 +2,12 @@
 
 namespace Src\Admin\Auth\Infrastructure;
 
+use App\Mail\AdminVerificationEmail;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
 final class ResendVerificationController
@@ -44,7 +47,16 @@ final class ResendVerificationController
             return response()->json(['message' => 'El correo ya ha sido verificado.'], 400);
         }
 
-        $user->sendEmailVerificationNotification();
+        $user->verification_token = Str::random(60);
+        $user->save();
+
+        $verificationUrl = rtrim((string) config('app.admin_url'), '/')
+            . '/verify?token=' . $user->verification_token;
+
+        Mail::to($user->email)->queue(new AdminVerificationEmail(
+            (string) $user->name,
+            $verificationUrl,
+        ));
 
         return response()->json(['message' => 'Correo de verificación reenviado.'], 200);
     }

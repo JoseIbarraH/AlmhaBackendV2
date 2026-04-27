@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Src\Admin\User\Application;
 
+use App\Mail\AdminVerificationEmail;
 use DateTime;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Src\Admin\User\Domain\Contracts\UserRepositoryContract;
 use Src\Admin\User\Domain\Entity\User;
 use Src\Admin\User\Domain\ValueObjects\UserEmail;
 use Src\Admin\User\Domain\ValueObjects\UserEmailVerifiedDate;
+use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
 use Src\Admin\User\Domain\ValueObjects\UserName;
 use Src\Admin\User\Domain\ValueObjects\UserPassword;
 use Src\Admin\User\Domain\ValueObjects\UserRememberToken;
-use Src\Admin\User\Domain\ValueObjects\UserMainAdmin;
 use Src\Admin\User\Domain\ValueObjects\UserVerificationToken;
-use Src\Admin\User\Infrastructure\Jobs\SendUserVerificationToN8nJob;
-use Illuminate\Support\Str;
 
 final class CreateUserUseCase
 {
@@ -49,11 +50,12 @@ final class CreateUserUseCase
 
         $this->repository->save($user);
 
-        // Enviar a n8n para que ellos manejen el correo de bienvenida/verificación
-        SendUserVerificationToN8nJob::dispatch(
+        $verificationUrl = rtrim((string) config('app.admin_url'), '/')
+            . '/verify?token=' . $user->verificationToken()->value();
+
+        Mail::to($user->email()->value())->queue(new AdminVerificationEmail(
             $user->name()->value(),
-            $user->email()->value(),
-            $user->verificationToken()->value()
-        );
+            $verificationUrl,
+        ));
     }
 }
