@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Src\Landing\Subscription\Application;
 
+use App\Mail\SubscriptionConfirmationEmail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Src\Landing\Subscription\Domain\Contracts\SubscriberRepositoryContract;
 use Src\Landing\Subscription\Domain\Entity\Subscriber;
 use Src\Landing\Subscription\Domain\ValueObjects\SubscriberEmail;
 use Src\Landing\Subscription\Domain\ValueObjects\SubscriberToken;
-use Src\Landing\Subscription\Infrastructure\Jobs\SendToN8nJob;
 
 final class SubscribeUseCase
 {
@@ -26,12 +27,15 @@ final class SubscribeUseCase
             (string) Str::uuid(),
             new SubscriberEmail($email),
             new SubscriberToken(Str::random(60)),
-            null // Pending verification
+            null
         );
 
         $this->repository->save($subscriber);
 
-        // Dispatch Job synchronously in logic, asynchronously in infrastructure
-        SendToN8nJob::dispatch($subscriber->email()->value(), $subscriber->token()->value());
+        $clientUrl = rtrim((string) config('app.client_url'), '/');
+        $defaultLang = (string) config('app.locale', 'es');
+        $confirmationUrl = "{$clientUrl}/{$defaultLang}/subscribe/confirm?token=" . urlencode($subscriber->token()->value());
+
+        Mail::to($subscriber->email()->value())->queue(new SubscriptionConfirmationEmail($confirmationUrl));
     }
 }

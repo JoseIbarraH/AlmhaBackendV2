@@ -21,7 +21,7 @@ final class SubscribeController
     #[OA\Post(
         path: "/api/client/subscribe",
         summary: "Suscripción al newsletter",
-        description: "Crea un Subscriber pendiente y dispatcha SendToN8nJob. El usuario debe confirmar via email para activar.",
+        description: "Crea un Subscriber pendiente y encola un correo de confirmación. El usuario debe confirmar via email para activar.",
         tags: ["Client / Subscription"],
         requestBody: new OA\RequestBody(
             required: true,

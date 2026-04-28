@@ -186,7 +186,7 @@ Luego `http://localhost:9000/up` → debe responder con el health check de Larav
 | `QUEUE_CONNECTION` | `database` o `redis` | Database funciona; Redis escala mejor si tienes mucho volumen. |
 | `CACHE_STORE` | `database` o `redis` | |
 | `JWT_SECRET` | — | Genera con `php artisan jwt:secret --show`. |
-| `N8N_WEBHOOK_URL` / `N8N_CONTACT_WEBHOOK_URL` / `N8N_CHAT_WEBHOOK_URL` / `N8N_AUTH_TOKEN` | — | Solo si usas las integraciones de n8n. |
+| `N8N_CONTACT_WEBHOOK_URL` / `N8N_CHAT_WEBHOOK_URL` / `N8N_AUTH_TOKEN` | — | Solo si usas las integraciones de n8n (contacto y chat). |
 
 ### Pasos en Dokploy
 
