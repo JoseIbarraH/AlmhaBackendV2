@@ -14,9 +14,13 @@ trait ResolvesLanguage
      *  2. Accept-Language header (primary tag, e.g. "es-CO" → "es")
      *  3. config('app.locale') fallback
      */
-    protected function resolveLang(Request $request, array $supported = ['es', 'en']): string
+    protected function resolveLang(Request $request, ?array $supported = null): string
     {
+        $supported = $supported ?? (array) config('app.supported_locales', ['es', 'en', 'fr']);
         $fallback = config('app.locale', 'es');
+        if (!in_array($fallback, $supported, true)) {
+            $fallback = $supported[0] ?? 'es';
+        }
 
         $queryLang = $request->query('lang');
         if (is_string($queryLang) && $queryLang !== '') {
