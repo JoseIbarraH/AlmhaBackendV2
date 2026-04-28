@@ -78,7 +78,7 @@ class DesignModuleSeeder extends Seeder
                 'updated_at' => now(),
             ]);
 
-            // Add english/spanish empty translation for the frontend to be ready
+            // Add empty translations for every supported locale so the frontend is ready.
             DB::table('design_item_translations')->insert([
                 [
                     'design_item_id' => $itemId,
@@ -95,7 +95,15 @@ class DesignModuleSeeder extends Seeder
                     'subtitle' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]
+                ],
+                [
+                    'design_item_id' => $itemId,
+                    'lang' => 'fr',
+                    'title' => null,
+                    'subtitle' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
             ]);
         }
     }

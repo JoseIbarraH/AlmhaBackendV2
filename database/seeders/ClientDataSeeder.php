@@ -46,8 +46,8 @@ final class ClientDataSeeder extends Seeder
     private function seedProcedureCategories(): void
     {
         $categories = [
-            'facial'   => ['es' => 'Facial',   'en' => 'Facial'],
-            'corporal' => ['es' => 'Corporal', 'en' => 'Body'],
+            'facial'   => ['es' => 'Facial',   'en' => 'Facial', 'fr' => 'Visage'],
+            'corporal' => ['es' => 'Corporal', 'en' => 'Body',   'fr' => 'Corps'],
         ];
 
         foreach ($categories as $code => $titles) {
@@ -70,8 +70,9 @@ final class ClientDataSeeder extends Seeder
                 'views'         => 1205,
                 'image'         => '/images/procedures/rinoplastia.jpg',
                 'translations'  => [
-                    'es' => ['title' => 'Rinoplastia', 'subtitle' => 'Armonía y proporción facial', 'slug' => 'rinoplastia'],
-                    'en' => ['title' => 'Rhinoplasty', 'subtitle' => 'Facial harmony and proportion', 'slug' => 'rhinoplasty'],
+                    'es' => ['title' => 'Rinoplastia',  'subtitle' => 'Armonía y proporción facial',     'slug' => 'rinoplastia'],
+                    'en' => ['title' => 'Rhinoplasty',  'subtitle' => 'Facial harmony and proportion',   'slug' => 'rhinoplasty'],
+                    'fr' => ['title' => 'Rhinoplastie', 'subtitle' => 'Harmonie et proportion du visage','slug' => 'rhinoplastie'],
                 ],
             ],
             [
@@ -79,8 +80,9 @@ final class ClientDataSeeder extends Seeder
                 'views'         => 2380,
                 'image'         => '/images/procedures/abdominoplastia.jpg',
                 'translations'  => [
-                    'es' => ['title' => 'Abdominoplastia', 'subtitle' => 'Contorno abdominal firme', 'slug' => 'abdominoplastia'],
-                    'en' => ['title' => 'Tummy Tuck',      'subtitle' => 'Firm abdominal contour',   'slug' => 'tummy-tuck'],
+                    'es' => ['title' => 'Abdominoplastia',  'subtitle' => 'Contorno abdominal firme',  'slug' => 'abdominoplastia'],
+                    'en' => ['title' => 'Tummy Tuck',       'subtitle' => 'Firm abdominal contour',    'slug' => 'tummy-tuck'],
+                    'fr' => ['title' => 'Abdominoplastie', 'subtitle' => 'Contour abdominal raffermi', 'slug' => 'abdominoplastie'],
                 ],
             ],
             [
@@ -88,8 +90,9 @@ final class ClientDataSeeder extends Seeder
                 'views'         => 1870,
                 'image'         => '/images/procedures/liposuccion.jpg',
                 'translations'  => [
-                    'es' => ['title' => 'Liposucción',    'subtitle' => 'Remodelado de silueta',   'slug' => 'liposuccion'],
-                    'en' => ['title' => 'Liposuction',    'subtitle' => 'Silhouette remodeling',   'slug' => 'liposuction'],
+                    'es' => ['title' => 'Liposucción', 'subtitle' => 'Remodelado de silueta',     'slug' => 'liposuccion'],
+                    'en' => ['title' => 'Liposuction', 'subtitle' => 'Silhouette remodeling',     'slug' => 'liposuction'],
+                    'fr' => ['title' => 'Liposuccion', 'subtitle' => 'Remodelage de la silhouette','slug' => 'liposuccion-fr'],
                 ],
             ],
         ];
@@ -127,14 +130,17 @@ final class ClientDataSeeder extends Seeder
             'what_is'   => [
                 'es' => ['title' => '¿En qué consiste?',   'one' => 'Descripción del procedimiento en español.', 'two' => 'Detalle adicional del procedimiento.'],
                 'en' => ['title' => 'What is it?',         'one' => 'Description of the procedure in English.',   'two' => 'Additional procedure details.'],
+                'fr' => ['title' => "En quoi ça consiste ?", 'one' => 'Description de la procédure en français.', 'two' => 'Détails supplémentaires de la procédure.'],
             ],
             'technique' => [
                 'es' => ['title' => 'Técnica quirúrgica',  'one' => 'Explicación de la técnica.', 'two' => 'Más detalles técnicos.'],
                 'en' => ['title' => 'Surgical technique', 'one' => 'Technique explanation.',    'two' => 'More technical details.'],
+                'fr' => ['title' => 'Technique chirurgicale', 'one' => 'Explication de la technique.', 'two' => 'Plus de détails techniques.'],
             ],
             'recovery'  => [
                 'es' => ['title' => 'Recuperación',        'one' => 'Visión general de recuperación.', 'two' => 'Tiempos esperados.'],
                 'en' => ['title' => 'Recovery',            'one' => 'Recovery overview.',              'two' => 'Expected timelines.'],
+                'fr' => ['title' => 'Récupération',        'one' => 'Aperçu de la récupération.',      'two' => 'Délais prévus.'],
             ],
         ];
 
@@ -161,9 +167,11 @@ final class ClientDataSeeder extends Seeder
     {
         $steps = [
             ['es' => ['title' => 'Valoración médica',   'description' => 'Consulta inicial con el especialista.'],
-             'en' => ['title' => 'Medical evaluation', 'description' => 'Initial consultation with the specialist.']],
+             'en' => ['title' => 'Medical evaluation', 'description' => 'Initial consultation with the specialist.'],
+             'fr' => ['title' => 'Évaluation médicale', 'description' => 'Consultation initiale avec le spécialiste.']],
             ['es' => ['title' => 'Exámenes previos',    'description' => 'Laboratorios y estudios requeridos.'],
-             'en' => ['title' => 'Pre-op tests',       'description' => 'Required lab work and imaging.']],
+             'en' => ['title' => 'Pre-op tests',       'description' => 'Required lab work and imaging.'],
+             'fr' => ['title' => 'Examens préopératoires', 'description' => 'Analyses de laboratoire et examens requis.']],
         ];
 
         foreach ($steps as $i => $content) {
@@ -187,11 +195,14 @@ final class ClientDataSeeder extends Seeder
     {
         $phases = [
             ['es' => ['period' => 'Semana 1', 'title' => 'Reposo inicial',   'description' => 'Descanso y medicación.'],
-             'en' => ['period' => 'Week 1',   'title' => 'Initial rest',    'description' => 'Rest and medication.']],
+             'en' => ['period' => 'Week 1',   'title' => 'Initial rest',    'description' => 'Rest and medication.'],
+             'fr' => ['period' => 'Semaine 1','title' => 'Repos initial',   'description' => 'Repos et médication.']],
             ['es' => ['period' => 'Semana 2', 'title' => 'Movilidad suave', 'description' => 'Retomar actividades ligeras.'],
-             'en' => ['period' => 'Week 2',   'title' => 'Gentle mobility','description' => 'Resume light activities.']],
+             'en' => ['period' => 'Week 2',   'title' => 'Gentle mobility','description' => 'Resume light activities.'],
+             'fr' => ['period' => 'Semaine 2','title' => 'Mobilité douce', 'description' => 'Reprise des activités légères.']],
             ['es' => ['period' => 'Mes 1',    'title' => 'Evaluación',       'description' => 'Control y seguimiento.'],
-             'en' => ['period' => 'Month 1',  'title' => 'Check-up',        'description' => 'Follow-up appointment.']],
+             'en' => ['period' => 'Month 1',  'title' => 'Check-up',        'description' => 'Follow-up appointment.'],
+             'fr' => ['period' => 'Mois 1',   'title' => 'Bilan',           'description' => 'Contrôle et suivi.']],
         ];
 
         foreach ($phases as $i => $content) {
@@ -215,10 +226,10 @@ final class ClientDataSeeder extends Seeder
     private function seedProcedurePostop(int $procedureId): void
     {
         $items = [
-            ['type' => 'do',   'es' => 'Seguir las indicaciones médicas al pie de la letra.', 'en' => 'Follow medical instructions exactly.'],
-            ['type' => 'do',   'es' => 'Mantener buena hidratación.',                          'en' => 'Stay well hydrated.'],
-            ['type' => 'dont', 'es' => 'Evitar el ejercicio intenso durante la recuperación.', 'en' => 'Avoid intense exercise during recovery.'],
-            ['type' => 'dont', 'es' => 'No consumir alcohol durante la primera semana.',       'en' => 'Do not drink alcohol during the first week.'],
+            ['type' => 'do',   'es' => 'Seguir las indicaciones médicas al pie de la letra.', 'en' => 'Follow medical instructions exactly.',           'fr' => 'Suivre scrupuleusement les indications médicales.'],
+            ['type' => 'do',   'es' => 'Mantener buena hidratación.',                          'en' => 'Stay well hydrated.',                            'fr' => 'Maintenir une bonne hydratation.'],
+            ['type' => 'dont', 'es' => 'Evitar el ejercicio intenso durante la recuperación.', 'en' => 'Avoid intense exercise during recovery.',        'fr' => 'Éviter les exercices intenses pendant la récupération.'],
+            ['type' => 'dont', 'es' => 'No consumir alcohol durante la primera semana.',       'en' => 'Do not drink alcohol during the first week.',    'fr' => "Ne pas consommer d'alcool durant la première semaine."],
         ];
 
         foreach ($items as $i => $item) {
@@ -228,7 +239,7 @@ final class ClientDataSeeder extends Seeder
                 'order'        => $i + 1,
             ]);
 
-            foreach (['es', 'en'] as $lang) {
+            foreach (['es', 'en', 'fr'] as $lang) {
                 ProcedurePostoperativeInstructionTranslationEloquentModel::create([
                     'procedure_postoperative_instruction_id' => $instruction->id,
                     'lang'                                   => $lang,
@@ -241,10 +252,12 @@ final class ClientDataSeeder extends Seeder
     private function seedProcedureFaqs(int $procedureId): void
     {
         $faqs = [
-            ['es' => ['q' => '¿Cuánto dura el procedimiento?', 'a' => 'Generalmente entre 2 y 4 horas.'],
-             'en' => ['q' => 'How long does the procedure take?', 'a' => 'Generally between 2 and 4 hours.']],
-            ['es' => ['q' => '¿Es doloroso?', 'a' => 'Se realiza bajo anestesia; el postoperatorio es manejable.'],
-             'en' => ['q' => 'Is it painful?', 'a' => 'Performed under anesthesia; post-op is manageable.']],
+            ['es' => ['q' => '¿Cuánto dura el procedimiento?',     'a' => 'Generalmente entre 2 y 4 horas.'],
+             'en' => ['q' => 'How long does the procedure take?',  'a' => 'Generally between 2 and 4 hours.'],
+             'fr' => ['q' => 'Combien de temps dure la procédure ?', 'a' => 'Généralement entre 2 et 4 heures.']],
+            ['es' => ['q' => '¿Es doloroso?',                                                  'a' => 'Se realiza bajo anestesia; el postoperatorio es manejable.'],
+             'en' => ['q' => 'Is it painful?',                                                 'a' => 'Performed under anesthesia; post-op is manageable.'],
+             'fr' => ['q' => "Est-ce douloureux ?",                                            'a' => 'Réalisée sous anesthésie ; le postopératoire est gérable.']],
         ];
 
         foreach ($faqs as $i => $content) {
@@ -284,16 +297,18 @@ final class ClientDataSeeder extends Seeder
                 'name' => 'Dra. Ana García',
                 'image' => '/images/team/ana-garcia.jpg',
                 'translations' => [
-                    'es' => ['specialization' => 'Cirugía plástica y reconstructiva', 'description' => 'Cirujana especializada en procedimientos faciales y corporales.', 'biography' => '<p>Más de 10 años de experiencia.</p>'],
-                    'en' => ['specialization' => 'Plastic and reconstructive surgery', 'description' => 'Surgeon specialized in facial and body procedures.', 'biography' => '<p>Over 10 years of experience.</p>'],
+                    'es' => ['specialization' => 'Cirugía plástica y reconstructiva',  'description' => 'Cirujana especializada en procedimientos faciales y corporales.',           'biography' => '<p>Más de 10 años de experiencia.</p>'],
+                    'en' => ['specialization' => 'Plastic and reconstructive surgery', 'description' => 'Surgeon specialized in facial and body procedures.',                       'biography' => '<p>Over 10 years of experience.</p>'],
+                    'fr' => ['specialization' => 'Chirurgie plastique et reconstructive', 'description' => 'Chirurgienne spécialisée en procédures faciales et corporelles.',       'biography' => "<p>Plus de 10 ans d'expérience.</p>"],
                 ],
             ],
             [
                 'name' => 'Dr. Carlos Pérez',
                 'image' => '/images/team/carlos-perez.jpg',
                 'translations' => [
-                    'es' => ['specialization' => 'Cirugía estética', 'description' => 'Especialista en procedimientos mínimamente invasivos.', 'biography' => '<p>Certificado internacionalmente.</p>'],
-                    'en' => ['specialization' => 'Aesthetic surgery', 'description' => 'Specialist in minimally invasive procedures.', 'biography' => '<p>Internationally certified.</p>'],
+                    'es' => ['specialization' => 'Cirugía estética',  'description' => 'Especialista en procedimientos mínimamente invasivos.', 'biography' => '<p>Certificado internacionalmente.</p>'],
+                    'en' => ['specialization' => 'Aesthetic surgery', 'description' => 'Specialist in minimally invasive procedures.',         'biography' => '<p>Internationally certified.</p>'],
+                    'fr' => ['specialization' => 'Chirurgie esthétique', 'description' => 'Spécialiste des procédures mini-invasives.',        'biography' => '<p>Certifié au niveau international.</p>'],
                 ],
             ],
         ];
@@ -323,13 +338,17 @@ final class ClientDataSeeder extends Seeder
                     'order'   => $i,
                 ]);
 
-                foreach (['es', 'en'] as $lang) {
+                $imageDescriptions = [
+                    'es' => "Resultado caso {$i}",
+                    'en' => "Case {$i} result",
+                    'fr' => "Résultat cas {$i}",
+                ];
+
+                foreach ($imageDescriptions as $lang => $description) {
                     TeamImageTranslationEloquentModel::create([
                         'team_image_id' => $img->id,
                         'lang'          => $lang,
-                        'description'   => $lang === 'es'
-                            ? "Resultado caso {$i}"
-                            : "Case {$i} result",
+                        'description'   => $description,
                     ]);
                 }
             }
@@ -341,17 +360,36 @@ final class ClientDataSeeder extends Seeder
         // Populate the empty design_items created by DesignModuleSeeder with real media/translations.
         $mediaByKey = [
             'main_banner'      => [
-                ['path' => '/images/banners/banner-1.jpg', 'es' => ['title' => 'Transformaciones que inspiran', 'subtitle' => 'Cirugía estética de clase mundial'],
-                                                          'en' => ['title' => 'Transformations that inspire',    'subtitle' => 'World-class aesthetic surgery']],
-                ['path' => '/images/banners/banner-2.jpg', 'es' => ['title' => 'Tu mejor versión',                'subtitle' => 'Equipo profesional certificado'],
-                                                          'en' => ['title' => 'Your best version',               'subtitle' => 'Certified professional team']],
+                ['path' => '/images/banners/banner-1.jpg',
+                    'es' => ['title' => 'Transformaciones que inspiran', 'subtitle' => 'Cirugía estética de clase mundial'],
+                    'en' => ['title' => 'Transformations that inspire',  'subtitle' => 'World-class aesthetic surgery'],
+                    'fr' => ['title' => 'Des transformations qui inspirent', 'subtitle' => 'Chirurgie esthétique de classe mondiale']],
+                ['path' => '/images/banners/banner-2.jpg',
+                    'es' => ['title' => 'Tu mejor versión',          'subtitle' => 'Equipo profesional certificado'],
+                    'en' => ['title' => 'Your best version',         'subtitle' => 'Certified professional team'],
+                    'fr' => ['title' => 'Votre meilleure version',   'subtitle' => 'Équipe professionnelle certifiée']],
             ],
-            'background_1'     => [['path' => '/images/backgrounds/bg-1.jpg', 'es' => ['title' => 'Excelencia', 'subtitle' => ''], 'en' => ['title' => 'Excellence', 'subtitle' => '']]],
-            'background_2'     => [['path' => '/images/backgrounds/bg-2.jpg', 'es' => ['title' => 'Confianza',  'subtitle' => ''], 'en' => ['title' => 'Trust',      'subtitle' => '']]],
-            'background_3'     => [['path' => '/images/backgrounds/bg-3.jpg', 'es' => ['title' => 'Resultados', 'subtitle' => ''], 'en' => ['title' => 'Results',    'subtitle' => '']]],
+            'background_1'     => [['path' => '/images/backgrounds/bg-1.jpg',
+                'es' => ['title' => 'Excelencia', 'subtitle' => ''],
+                'en' => ['title' => 'Excellence', 'subtitle' => ''],
+                'fr' => ['title' => 'Excellence', 'subtitle' => '']]],
+            'background_2'     => [['path' => '/images/backgrounds/bg-2.jpg',
+                'es' => ['title' => 'Confianza', 'subtitle' => ''],
+                'en' => ['title' => 'Trust',     'subtitle' => ''],
+                'fr' => ['title' => 'Confiance', 'subtitle' => '']]],
+            'background_3'     => [['path' => '/images/backgrounds/bg-3.jpg',
+                'es' => ['title' => 'Resultados', 'subtitle' => ''],
+                'en' => ['title' => 'Results',    'subtitle' => ''],
+                'fr' => ['title' => 'Résultats',  'subtitle' => '']]],
             'brands_carousel'  => [
-                ['path' => '/images/brands/brand-1.png', 'es' => ['title' => 'Socio 1', 'subtitle' => ''], 'en' => ['title' => 'Partner 1', 'subtitle' => '']],
-                ['path' => '/images/brands/brand-2.png', 'es' => ['title' => 'Socio 2', 'subtitle' => ''], 'en' => ['title' => 'Partner 2', 'subtitle' => '']],
+                ['path' => '/images/brands/brand-1.png',
+                    'es' => ['title' => 'Socio 1',     'subtitle' => ''],
+                    'en' => ['title' => 'Partner 1',   'subtitle' => ''],
+                    'fr' => ['title' => 'Partenaire 1','subtitle' => '']],
+                ['path' => '/images/brands/brand-2.png',
+                    'es' => ['title' => 'Socio 2',     'subtitle' => ''],
+                    'en' => ['title' => 'Partner 2',   'subtitle' => ''],
+                    'fr' => ['title' => 'Partenaire 2','subtitle' => '']],
             ],
         ];
 
@@ -377,7 +415,7 @@ final class ClientDataSeeder extends Seeder
                     'updated_at' => now(),
                 ]);
 
-                foreach (['es', 'en'] as $lang) {
+                foreach (['es', 'en', 'fr'] as $lang) {
                     DB::table('design_item_translations')->insert([
                         'design_item_id' => $itemId,
                         'lang'           => $lang,

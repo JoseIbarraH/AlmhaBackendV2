@@ -29,6 +29,12 @@ class BlogTestSeeder extends Seeder
             'title' => 'Technology',
         ]);
 
+        BlogCategoryTranslationEloquentModel::create([
+            'category_id' => $category->id,
+            'lang' => 'fr',
+            'title' => 'Technologie',
+        ]);
+
         // 2. Crear blog de prueba
         $blog = BlogEloquentModel::create([
             'category_code' => 'tech',
@@ -54,6 +60,14 @@ class BlogTestSeeder extends Seeder
             'content' => '<p>Artificial intelligence (AI) is a branch of computer science that seeks to create systems capable of performing tasks that normally require human intelligence.</p>',
         ]);
 
+        BlogTranslationEloquentModel::create([
+            'blog_id' => $blog->id,
+            'lang' => 'fr',
+            'title' => "Introduction à l'intelligence artificielle",
+            'slug' => 'introduction-a-l-intelligence-artificielle',
+            'content' => "<p>L'intelligence artificielle (IA) est une branche de l'informatique qui cherche à créer des systèmes capables d'effectuer des tâches qui nécessitent normalement l'intelligence humaine.</p>",
+        ]);
+
         // 3. Segundo blog de prueba
         $blog2 = BlogEloquentModel::create([
             'category_code' => 'tech',
@@ -76,6 +90,14 @@ class BlogTestSeeder extends Seeder
             'title' => 'The best PHP frameworks in 2026',
             'slug' => 'the-best-php-frameworks-in-2026',
             'content' => '<p>Laravel remains the most popular PHP framework, followed by Symfony and others.</p>',
+        ]);
+
+        BlogTranslationEloquentModel::create([
+            'blog_id' => $blog2->id,
+            'lang' => 'fr',
+            'title' => 'Les meilleurs frameworks PHP en 2026',
+            'slug' => 'les-meilleurs-frameworks-php-en-2026',
+            'content' => '<p>Laravel reste le framework PHP le plus populaire, suivi de Symfony et d\'autres.</p>',
         ]);
 
         $this->command->info('✅ Blogs de prueba creados exitosamente');
