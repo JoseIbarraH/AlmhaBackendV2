@@ -27,7 +27,10 @@ final class SubscribeController
             required: true,
             content: new OA\JsonContent(
                 required: ["email"],
-                properties: [new OA\Property(property: "email", type: "string", format: "email")]
+                properties: [
+                    new OA\Property(property: "email", type: "string", format: "email"),
+                    new OA\Property(property: "locale", type: "string", enum: ["es", "en", "fr"], description: "Idioma del cliente; usado para construir la URL de confirmación"),
+                ]
             )
         ),
         responses: [
@@ -37,12 +40,15 @@ final class SubscribeController
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
+        $supported = implode(',', (array) config('app.supported_locales', ['es', 'en', 'fr']));
+
+        $validated = $request->validate([
+            'email'  => 'required|email',
+            'locale' => 'nullable|string|in:' . $supported,
         ]);
 
         try {
-            $this->useCase->execute($request->input('email'));
+            $this->useCase->execute($validated['email'], $validated['locale'] ?? null);
 
             return response()->json([
                 'message' => 'Subscription pending. Please check your email.',
