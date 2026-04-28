@@ -78,6 +78,10 @@ final class GetBlogBySlugController
                 $detail = BlogPresenter::detail($blog, $lang);
                 $detail['random_blogs'] = $randomBlogs;
 
+                $detail['slugs'] = BlogTranslationEloquentModel::where('blog_id', $blog->id)
+                    ->pluck('slug', 'lang')
+                    ->toArray();
+
                 return $detail;
             }
         );

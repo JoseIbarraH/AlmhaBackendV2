@@ -138,6 +138,14 @@ class AppServiceProvider extends ServiceProvider
                 ], 429));
         });
 
+        // Throttle for the mass-mail queue. Used by the queue middleware
+        // (RateLimited('mass-mail')) to spread bulk sends and avoid SMTP/inbox
+        // blocks. 30/min works fine on poste.io for <2000 subscribers.
+        // Tune via MAIL_MASS_RATE_PER_MIN if needed.
+        RateLimiter::for('mass-mail', function () {
+            return Limit::perMinute((int) env('MAIL_MASS_RATE_PER_MIN', 30));
+        });
+
         $this->registerClientCacheInvalidation();
     }
 

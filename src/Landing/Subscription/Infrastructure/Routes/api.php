@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Src\Landing\Subscription\Infrastructure\Controllers\ConfirmSubscriptionController;
 use Src\Landing\Subscription\Infrastructure\Controllers\SubscribeController;
+use Src\Landing\Subscription\Infrastructure\Controllers\UnsubscribeController;
 
 /**
  * Subscription endpoints. Loaded from bootstrap/app.php inside the `api/client`
@@ -14,4 +15,6 @@ Route::prefix('subscribe')->group(function () {
     Route::post('/', SubscribeController::class);
     // GET so the confirmation link in the email works when the user clicks it.
     Route::get('/confirm', ConfirmSubscriptionController::class);
+    // GET for click-from-email; POST for RFC 8058 One-Click unsubscribe (Gmail/Outlook).
+    Route::match(['get', 'post'], '/unsubscribe', UnsubscribeController::class);
 });

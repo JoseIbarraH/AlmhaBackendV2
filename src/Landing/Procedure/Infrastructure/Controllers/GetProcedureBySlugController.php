@@ -70,6 +70,10 @@ final class GetProcedureBySlugController
                 $detail['whatsapp_message']      = $whatsapp['message']       ?? null;
                 $detail['whatsapp_open_new_tab'] = (bool) ($whatsapp['open_new_tab'] ?? false);
 
+                $detail['slugs'] = ProcedureTranslationEloquentModel::where('procedure_id', $procedure->id)
+                    ->pluck('slug', 'lang')
+                    ->toArray();
+
                 return $detail;
             }
         );

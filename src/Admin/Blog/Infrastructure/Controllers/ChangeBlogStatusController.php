@@ -39,7 +39,8 @@ final class ChangeBlogStatusController
             content: new OA\JsonContent(
                 required: ["status"],
                 properties: [
-                    new OA\Property(property: "status", type: "string", enum: ["draft", "published", "archived"])
+                    new OA\Property(property: "status", type: "string", enum: ["draft", "published", "archived"]),
+                    new OA\Property(property: "notify_subscribers", type: "boolean", description: "Si true y status=published, encola correo a suscriptores verificados (una sola vez por blog)")
                 ]
             )
         ),
@@ -54,12 +55,17 @@ final class ChangeBlogStatusController
     )]
     public function __invoke(Request $request, int $id): JsonResponse
     {
-        $request->validate([
-            'status' => 'required|string|in:draft,published,archived'
+        $validated = $request->validate([
+            'status' => 'required|string|in:draft,published,archived',
+            'notify_subscribers' => 'sometimes|boolean',
         ]);
 
         try {
-            $this->useCase->execute($id, $request->input('status'));
+            $this->useCase->execute(
+                $id,
+                $validated['status'],
+                (bool) ($validated['notify_subscribers'] ?? false),
+            );
 
             return response()->json([
                 'message' => 'Blog status updated successfully',

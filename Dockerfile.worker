@@ -46,7 +46,11 @@ RUN composer dump-autoload --no-dev --optimize --classmap-authoritative \
 
 # Runs the queue worker as a long-lived process. --max-time=3600 restarts the
 # worker every hour to prevent memory leaks. --tries=3 retries failed jobs.
+# Queues are processed in priority order: `default` first (transactional —
+# admin verification, password resets, etc.), then `mass-mail` (bulk blog
+# notifications throttled by RateLimiter('mass-mail')). This way a 1k-blast
+# never delays a verification email.
 CMD ["sh", "-c", "\
     php artisan config:cache && \
-    exec php artisan queue:work --verbose --tries=3 --timeout=90 --sleep=3 --max-time=3600 \
+    exec php artisan queue:work --queue=default,mass-mail --verbose --tries=3 --timeout=90 --sleep=3 --max-time=3600 \
 "]

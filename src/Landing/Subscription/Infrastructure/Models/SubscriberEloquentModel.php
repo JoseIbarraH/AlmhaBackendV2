@@ -18,9 +18,11 @@ final class SubscriberEloquentModel extends Model
         'email',
         'token',
         'verified_at',
+        'unsubscribed_at',
     ];
 
     protected $casts = [
         'verified_at' => 'datetime',
+        'unsubscribed_at' => 'datetime',
     ];
 }

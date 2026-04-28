@@ -80,6 +80,11 @@ final class Blog implements \JsonSerializable
         }
     }
 
+    public function markNotificationSent(): void
+    {
+        $this->notificationSentAt = new DateTime();
+    }
+
     public function addTranslation(BlogTranslation $translation): void
     {
         $this->translations[] = $translation;
