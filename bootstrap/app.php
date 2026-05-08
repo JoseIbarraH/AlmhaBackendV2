@@ -48,6 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     require base_path('src/Landing/Navbar/Infrastructure/Routes/api.php');
                     require base_path('src/Landing/Home/Infrastructure/Routes/api.php');
                     require base_path('src/Landing/Subscription/Infrastructure/Routes/api.php');
+                    require base_path('src/Landing/About/Infrastructure/Routes/api.php');
                 });
         },
     )

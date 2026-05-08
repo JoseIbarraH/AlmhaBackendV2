@@ -24,6 +24,36 @@ class SettingsSeeder extends Seeder
             ], 'group' => 'general'],
             ['key' => 'location', 'value' => 'Calle Principal #123, Ciudad', 'group' => 'general'],
 
+            // About — Misión y Visión (multi-idioma; fr se regenera automáticamente al editar desde admin)
+            ['key' => 'about_mission', 'value' => [
+                'es' => [
+                    'title' => 'Nuestra Misión',
+                    'description' => 'Proporcionar servicios de cirugía estética de clase mundial, combinando tecnología de vanguardia con un enfoque humano y personalizado para cada paciente.',
+                ],
+                'en' => [
+                    'title' => 'Our Mission',
+                    'description' => 'To provide world-class aesthetic surgery services, combining cutting-edge technology with a human, personalized approach for every patient.',
+                ],
+                'fr' => [
+                    'title' => 'Notre Mission',
+                    'description' => 'Offrir des services de chirurgie esthétique de classe mondiale, en alliant une technologie de pointe à une approche humaine et personnalisée pour chaque patient.',
+                ],
+            ], 'group' => 'general'],
+            ['key' => 'about_vision', 'value' => [
+                'es' => [
+                    'title' => 'Nuestra Visión',
+                    'description' => 'Ser la clínica de referencia en cirugía estética, reconocida por nuestra excelencia médica, innovación constante y el compromiso genuino con el bienestar de nuestros pacientes.',
+                ],
+                'en' => [
+                    'title' => 'Our Vision',
+                    'description' => 'To be the reference clinic in aesthetic surgery, recognized for our medical excellence, constant innovation, and genuine commitment to our patients\' wellbeing.',
+                ],
+                'fr' => [
+                    'title' => 'Notre Vision',
+                    'description' => 'Être la clinique de référence en chirurgie esthétique, reconnue pour notre excellence médicale, notre innovation constante et notre engagement sincère envers le bien-être de nos patients.',
+                ],
+            ], 'group' => 'general'],
+
             // Social Group
             ['key' => 'facebook', 'value' => 'https://facebook.com/almha', 'group' => 'social'],
             ['key' => 'instagram', 'value' => 'https://instagram.com/almha', 'group' => 'social'],
