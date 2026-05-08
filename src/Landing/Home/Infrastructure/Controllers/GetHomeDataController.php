@@ -45,6 +45,10 @@ final class GetHomeDataController
     private function buildPayload(string $lang): array
     {
         return [
+            'doctorSection' => [
+                'doctorSection'        => DesignItemPresenter::itemsFor('doctor_section_bg', $lang),
+                'doctorSectionSetting' => DesignItemPresenter::settingsFor('doctor_section_bg'),
+            ],
             'backgrounds' => [
                 'background1'        => DesignItemPresenter::itemsFor('background_1', $lang),
                 'background1Setting' => DesignItemPresenter::settingsFor('background_1'),

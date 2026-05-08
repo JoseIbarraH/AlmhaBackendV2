@@ -15,10 +15,10 @@ class EloquentDesignRepository implements DesignRepositoryContract
 {
     public function findAll(?string $lang = null): array
     {
-        // Stable insertion order — mirrors how the seeder creates them
-        // (main_banner, alternate_main_banner, background_1..3, brands_carousel).
-        // Postgres without ORDER BY returns rows arbitrarily.
+        // Display order is controlled by the `order` column (added in migration
+        // 2026_05_08_120000). Falls back to `id` for stability when two rows tie.
         $eloquentDesigns = EloquentDesignModel::with(['items.translations'])
+            ->orderBy('order')
             ->orderBy('id')
             ->get();
 

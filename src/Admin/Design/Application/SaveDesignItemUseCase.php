@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Src\Admin\Design\Domain\DesignRepositoryContract;
 use Src\Admin\Design\Domain\DesignTranslation;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
+use Src\Shared\Infrastructure\Cache\ClientCache;
 
 class SaveDesignItemUseCase
 {
@@ -95,6 +96,9 @@ class SaveDesignItemUseCase
         }
 
         $item = $this->repository->saveItem($data, $baseLang);
+
+        ClientCache::flushGroups('home', 'navbar');
+
         return $item->toArray();
     }
 }

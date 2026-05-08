@@ -5,6 +5,7 @@ namespace Src\Admin\Design\Application;
 use Illuminate\Support\Facades\Storage;
 use Src\Admin\Design\Domain\DesignRepositoryContract;
 use Src\Shared\Domain\Contracts\TranslatorServiceContract;
+use Src\Shared\Infrastructure\Cache\ClientCache;
 
 class UpdateDesignItemUseCase
 {
@@ -94,6 +95,10 @@ class UpdateDesignItemUseCase
         }
 
         $updatedItem = $this->repository->updateItem($itemId, $data, $baseLang);
+
+        // Public read endpoints (home, navbar) cache design data — flush so changes show up immediately.
+        ClientCache::flushGroups('home', 'navbar');
+
         return $updatedItem ? $updatedItem->toArray() : null;
     }
 }
